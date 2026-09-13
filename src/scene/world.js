@@ -212,7 +212,7 @@ export function createWorld({ noiseTex, manager }) {
     state.wanderer = createWanderer({ manager });
     scene.add(state.wanderer.group);
 
-    state.shards = createShardComposition({ shardTextures });
+    state.shards = await createShardComposition({ shardTextures, manager });
     scene.add(state.shards.group);
   }
 

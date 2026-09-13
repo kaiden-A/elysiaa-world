@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { range } from '../core/timeline.js';
 import pointer from '../core/pointer.js';
 
@@ -11,7 +12,7 @@ function makeRng(seed) {
   };
 }
 
-/** jagged glass polygon (box of w x h, zigzag edges) */
+/** jagged glass polygon (box of w x h, zigzag edges) — also the flat fallback */
 function jagged(w, h, rnd, jag) {
   const pts = [];
   const push = (x, y) => pts.push(new THREE.Vector2(x, y));
@@ -29,13 +30,30 @@ function jagged(w, h, rnd, jag) {
   return pts;
 }
 
+/** flat polygon with the same planar UVs the seeded shape had */
+function fallbackGeometry(pts, w, h) {
+  const geo = new THREE.ShapeGeometry(new THREE.Shape(pts));
+  const pos = geo.attributes.position;
+  const uvs = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uvs[i * 2] = pos.getX(i) / w;
+    uvs[i * 2 + 1] = pos.getY(i) / h;
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  return geo;
+}
+
 const shardVertex = /* glsl */ `
 varying vec2 vUv;
 varying vec3 vNormalW;
+varying vec3 vNormalO;
 varying vec3 vPosW;
+varying vec3 vPosO;
 
 void main() {
   vUv = uv;
+  vPosO = position;
+  vNormalO = normal;
   vec4 wp = modelMatrix * vec4(position, 1.0);
   vPosW = wp.xyz;
   vNormalW = normalize(mat3(modelMatrix) * normal);
@@ -50,10 +68,13 @@ uniform sampler2D uShot;
 uniform float uTime;
 uniform float uAlpha;
 uniform float uGlint;
+uniform float uThickness;
 
 varying vec2 vUv;
 varying vec3 vNormalW;
+varying vec3 vNormalO;
 varying vec3 vPosW;
+varying vec3 vPosO;
 
 void main() {
   vec3 shot = texture2D(uShot, vUv).rgb;
@@ -65,16 +86,24 @@ void main() {
   vec3 ink = shot * vec3(1.38, 1.32, 1.2);
   vec3 col = mix(glass, ink, 0.92);
 
+  // extruded walls/bevels read from the object-space normal, thickness scales it
+  float wall = 1.0 - smoothstep(0.55, 0.92, abs(vNormalO.z));
+  float thick = 1.0 + wall * (uThickness * 6.0);
+
   float sheen = (0.3 + 0.7 * length(shot)) * rim;
-  col += vec3(1.0, 0.94, 0.78) * sheen * 0.42;
+  col += vec3(1.0, 0.94, 0.78) * sheen * (0.42 + 0.28 * wall);
 
   // lit broken edge catching the light
   float edge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   float outline = smoothstep(0.06, 0.012, edge);
-  col += vec3(1.0, 0.95, 0.8) * outline * (0.26 + 0.12 * sin(uTime * 1.2 + vUv.x * 34.0));
+  col += vec3(1.0, 0.95, 0.8) * outline * (0.26 + 0.12 * sin(uTime * 1.2 + vUv.x * 34.0)) * thick;
 
   float g1 = pow(max(sin(vUv.x * 40.0 + uTime * 2.0) * sin(vUv.y * 40.0 - uTime * 1.6), 0.0), 26.0);
   col += vec3(1.0, 0.97, 0.86) * g1 * 0.15;
+
+  // glint rolling across the real bevels as the shard turns
+  float g2 = pow(max(dot(N, normalize(vec3(-0.3, 0.5, 0.8))), 0.0), 10.0);
+  col += vec3(1.0, 0.94, 0.78) * g2 * (0.025 + 0.22 * wall) * (0.6 + 0.4 * sin(uTime * 0.8 + vPosO.y * 3.0));
 
   col += vec3(1.0, 0.95, 0.82) * uGlint;
 
@@ -86,8 +115,13 @@ void main() {
  * A constellation of large mirror shards, each carrying one fragment of the
  * wanderer or a reflection of the world. They hold the composition, drift with
  * the pointer, then fly past the camera as the journey begins.
+ *
+ * The silhouettes come from a seeded 2D jagged() (seed 778899) and are baked as
+ * beveled, slightly warped meshes in Blender (`public/models/shards.glb`); the
+ * LAYOUT and all motion math below are unchanged. If the model is missing the
+ * flat seeded shape is used instead, so the hero never loses its shards.
  */
-export function createShardComposition({ shardTextures }) {
+export async function createShardComposition({ shardTextures, manager }) {
   const group = new THREE.Group();
   const rnd = makeRng(778899);
   const mobile = window.innerWidth < 760;
@@ -112,6 +146,16 @@ export function createShardComposition({ shardTextures }) {
   const items = mobile ? LAYOUT.slice(0, 5) : LAYOUT;
   const mobileScale = mobile ? 0.72 : 1;
 
+  const glbMeshes = {};
+  try {
+    const gltf = await new GLTFLoader(manager).loadAsync('/models/shards.glb');
+    gltf.scene.traverse((o) => {
+      if (o.isMesh) glbMeshes[o.name] = o;
+    });
+  } catch (e) {
+    /* flat fallback below keeps the composition alive */
+  }
+
   items.forEach((cfg, idx) => {
     const isAccent = idx >= 7;
     const entry = shardTextures[cfg.shot % shardTextures.length];
@@ -119,33 +163,36 @@ export function createShardComposition({ shardTextures }) {
     const w = 1.0 * cfg.s;
     const h = (isAccent ? 0.8 : 1.0) * cfg.s * ar;
 
+    /* keep the seeded call order: delay/phase below depend on this sequence */
     const pts = jagged(w, h, rnd, w * 0.16);
-    const shape = new THREE.Shape(pts);
-    const geo = new THREE.ShapeGeometry(shape);
 
-    const pos = geo.attributes.position;
-    const uvs = new Float32Array(pos.count * 2);
-    for (let i = 0; i < pos.count; i++) {
-      uvs[i * 2] = pos.getX(i) / w;
-      uvs[i * 2 + 1] = pos.getY(i) / h;
-    }
-    geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    const src = glbMeshes[`SHD_${String(idx + 1).padStart(2, '0')}`];
+    const geo = src ? src.geometry : fallbackGeometry(pts, w, h);
+    geo.computeBoundingBox();
+    const thickness = geo.boundingBox.max.z - geo.boundingBox.min.z;
 
-    const mat = new THREE.ShaderMaterial({
+    const uniforms = {
+      uShot: { value: entry.tex },
+      uTime: { value: 0 },
+      uAlpha: { value: 1 },
+      uGlint: { value: 0 },
+      uThickness: { value: thickness },
+    };
+    const base = {
       vertexShader: shardVertex,
       fragmentShader: shardFragment,
-      uniforms: {
-        uShot: { value: entry.tex },
-        uTime: { value: 0 },
-        uAlpha: { value: 1 },
-        uGlint: { value: 0 },
-      },
+      uniforms,
       transparent: true,
       depthWrite: false,
-      side: THREE.DoubleSide,
-    });
+      toneMapped: false,
+    };
+    const front = new THREE.Mesh(geo, new THREE.ShaderMaterial({ ...base, side: THREE.FrontSide }));
+    const back = new THREE.Mesh(geo, new THREE.ShaderMaterial({ ...base, side: THREE.BackSide }));
+    /* painter's order inside the shard: back glass first, front cap last */
+    back.position.z = -0.01;
 
-    const mesh = new THREE.Mesh(geo, mat);
+    const mesh = new THREE.Group();
+    mesh.add(back, front);
 
     const dir = new THREE.Vector2(cfg.x, cfg.y);
     if (dir.lengthSq() < 0.001) dir.set(0.3, 0.25);
@@ -157,6 +204,7 @@ export function createShardComposition({ shardTextures }) {
         rot: new THREE.Euler(cfg.rx, cfg.ry, cfg.rz),
         s: cfg.s * (mobile ? 0.82 : 1),
       },
+      uniforms,
       dir,
       delay: idx * 0.04 + rnd() * 0.12,
       phase: rnd() * Math.PI * 2,
@@ -189,7 +237,7 @@ export function createShardComposition({ shardTextures }) {
 
       m.scale.setScalar(hero.s * (1 + out * 0.7));
 
-      const u = m.material.uniforms;
+      const u = d.uniforms;
       u.uTime.value = time;
       u.uAlpha.value = 1 - out * 0.85;
       u.uGlint.value = Math.exp(-Math.pow((out - 0.22) * 4.0, 2)) * 0.32;
