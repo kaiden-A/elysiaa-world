@@ -19,57 +19,6 @@ export function makeNoiseTexture() {
   return tex;
 }
 
-/** 4-stop toon ramp gradient map (charcoal -> ink) */
-export function makeToonRamp() {
-  const c = document.createElement('canvas');
-  c.width = 64;
-  c.height = 1;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, 64, 0);
-  g.addColorStop(0.0, '#101014');
-  g.addColorStop(0.34, '#34343c');
-  g.addColorStop(0.68, '#9c988e');
-  g.addColorStop(1.0, '#f8f5ee');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 1);
-  const tex = new THREE.CanvasTexture(c);
-  tex.minFilter = THREE.NearestFilter;
-  tex.magFilter = THREE.NearestFilter;
-  tex.generateMipmaps = false;
-  return tex;
-}
-
-/** Desaturate an image into an ink-wash style canvas texture (flipY=false, glTF compatible) */
-export function desaturate(image, contrast = 1.25, clampDark = 0.05) {
-  const c = document.createElement('canvas');
-  c.width = image.width;
-  c.height = image.height;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(image, 0, 0);
-  const img = ctx.getImageData(0, 0, c.width, c.height);
-  const d = img.data;
-  for (let i = 0; i < d.length; i += 4) {
-    const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    let v = (g - 128) * contrast + 128;
-    v = clampDark * 255 + v * (1 - clampDark);
-    v = Math.min(255, Math.max(0, v));
-    d[i] = d[i + 1] = d[i + 2] = v;
-  }
-  ctx.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(c);
-  tex.flipY = false;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
-}
-
-/** Desaturate a loaded THREE.Texture's source image */
-export function desaturateTexture(tex, contrast, clampDark) {
-  if (!tex || !tex.image) return null;
-  return desaturate(tex.image, contrast, clampDark);
-}
-
-
 /** Soft radial dot sprite (dust motes) */
 export function makeDotTexture() {
   const c = document.createElement('canvas');

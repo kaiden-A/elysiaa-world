@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { createTimeline, range } from './core/timeline.js';
-import { makeNoiseTexture, makeToonRamp, webglAvailable } from './core/glutils.js';
+import { createTimeline } from './core/timeline.js';
+import { makeNoiseTexture, webglAvailable } from './core/glutils.js';
 import { createWorld } from './scene/world.js';
-import { initUI, setLoadProgress, hideLoader, showNoWebgl, setNodesOpacity } from './ui.js';
+import { initUI, setLoadProgress, hideLoader, showNoWebgl } from './ui.js';
 import './styles.css';
 
 async function boot() {
@@ -14,10 +14,8 @@ async function boot() {
   initUI();
 
   const timeline = createTimeline();
-  const ramp = makeToonRamp();
   const noiseTex = makeNoiseTexture();
 
-  // models + word texture load together
   const manager = new THREE.LoadingManager();
   manager.onProgress = (_url, loaded, total) => {
     setLoadProgress(loaded / Math.max(1, total));
@@ -25,24 +23,21 @@ async function boot() {
 
   await document.fonts.ready;
 
-  const world = createWorld({ ramp, noiseTex, manager });
+  const world = createWorld({ noiseTex, manager });
   await world.init();
 
   hideLoader();
 
   const clock = new THREE.Clock();
-  let lastT = 0;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function frame() {
+    requestAnimationFrame(frame);
+    if (document.hidden) return;
+
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = timeline.update(dt);
-    const time = clock.elapsedTime;
-
-    world.update(t, dt, time);
-    setNodesOpacity((1 - range(t, 0.1, 0.2)) * Math.min(1, Math.max(0, (time - 0.6) / 1.4)));
-    lastT = t;
-
-    requestAnimationFrame(frame);
+    world.update(t, dt, reduced ? 0 : clock.elapsedTime);
   }
   requestAnimationFrame(frame);
 }

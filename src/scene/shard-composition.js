@@ -1,8 +1,6 @@
 import * as THREE from 'three';
-import { range, track, clamp, lerp, smooth } from '../core/timeline.js';
-
-const RING_RADIUS = 2.32;
-const RING_CENTER = new THREE.Vector3(0, 0.12, -1.25);
+import { range } from '../core/timeline.js';
+import pointer from '../core/pointer.js';
 
 /** seeded rng */
 function makeRng(seed) {
@@ -48,72 +46,67 @@ void main() {
 const shardFragment = /* glsl */ `
 precision highp float;
 
-uniform sampler2D uShot;   // portrait of the knight
+uniform sampler2D uShot;
 uniform float uTime;
 uniform float uAlpha;
 uniform float uGlint;
-uniform float uPortrait;   // 1 portrait ... 0 dark frame glass
 
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
 
 void main() {
-  float shot = texture2D(uShot, vUv).r;
-  float ink  = shot * uPortrait;
-
+  vec3 shot = texture2D(uShot, vUv).rgb;
   vec3 V = normalize(cameraPosition - vPosW);
   vec3 N = normalize(vNormalW);
   float rim = pow(1.0 - abs(dot(N, V)), 1.7);
 
-  vec3 col = vec3(0.055, 0.055, 0.065);
-  vec3 inkColor = vec3(0.94, 0.92, 0.87);
-  col = mix(col, inkColor, ink * uAlpha);
+  vec3 glass = vec3(0.075, 0.08, 0.09);
+  vec3 ink = shot * vec3(1.38, 1.32, 1.2);
+  vec3 col = mix(glass, ink, 0.92);
 
-  float sheen = (0.3 + 0.7 * ink) * rim;
-  col += vec3(0.82) * sheen * 0.55;
+  float sheen = (0.3 + 0.7 * length(shot)) * rim;
+  col += vec3(1.0, 0.94, 0.78) * sheen * 0.42;
 
-  // lit broken edge — burns brighter as the piece becomes frame glass
+  // lit broken edge catching the light
   float edge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
-  float outline = smoothstep(0.055, 0.012, edge);
-  col += vec3(0.92) * outline * (0.28 + (1.0 - uPortrait) * 0.5) * (0.65 + 0.35 * sin(uTime * 1.2 + vUv.x * 34.0));
+  float outline = smoothstep(0.06, 0.012, edge);
+  col += vec3(1.0, 0.95, 0.8) * outline * (0.26 + 0.12 * sin(uTime * 1.2 + vUv.x * 34.0));
 
   float g1 = pow(max(sin(vUv.x * 40.0 + uTime * 2.0) * sin(vUv.y * 40.0 - uTime * 1.6), 0.0), 26.0);
-  col += vec3(0.95) * g1 * 0.2;
+  col += vec3(1.0, 0.97, 0.86) * g1 * 0.15;
 
-  col += vec3(1.0) * uGlint;
+  col += vec3(1.0, 0.95, 0.82) * uGlint;
 
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(col, uAlpha);
 }
 `;
 
 /**
- * Hand-composed constellation of large glass shards.
- * Each carries one portrait of the knight; at the end of the page they fly
- * into a broken ring framing the Gate to Elysium, portraits fading to glass.
- *
- * portraitTex: array of CanvasTextures (8 shots)
+ * A constellation of large mirror shards, each carrying one fragment of the
+ * wanderer or a reflection of the world. They hold the composition, drift with
+ * the pointer, then fly past the camera as the journey begins.
  */
-export function createShardComposition({ portraitTex }) {
+export function createShardComposition({ shardTextures }) {
   const group = new THREE.Group();
   const rnd = makeRng(778899);
   const mobile = window.innerWidth < 760;
 
   /*
-   * Authored hero composition — breathing space kept around the knight:
-   * body |x| < 0.55, head top y ~0.85, sword arm to the right.
-   * Big portraits hold the edges, supports sit high, accents mark the far corners.
+   * Authored hero composition — breathing space kept around the wanderer:
+   * body |x| < 0.55, head top y ~0.85, spear arm to the right.
+   * Big fragments hold the edges, reflections sit high, accents mark the corners.
    */
   const LAYOUT = [
-    { shot: 0, x: -2.3, y: 0.5, z: 0.28, rx: 0.05, ry: 0.44, rz: -0.1, s: 1.5 },
-    { shot: 1, x: 2.2, y: 0.3, z: 0.12, rx: 0.0, ry: -0.42, rz: 0.12, s: 1.42 },
-    { shot: 2, x: 0.05, y: 1.72, z: -1.3, rx: 0.0, ry: 0.08, rz: 0.05, s: 1.5 },
-    { shot: 3, x: -1.42, y: -0.78, z: 0.44, rx: 0.14, ry: 0.3, rz: 0.18, s: 1.02 },
-    { shot: 4, x: 1.5, y: -0.72, z: 0.4, rx: 0.07, ry: -0.26, rz: -0.16, s: 1.06 },
-    { shot: 5, x: -1.18, y: 1.38, z: -1.0, rx: 0.0, ry: 0.14, rz: -0.08, s: 0.92 },
-    { shot: 6, x: 1.22, y: 1.5, z: -1.1, rx: 0.0, ry: -0.2, rz: 0.09, s: 0.88 },
-    { shot: 7, x: -2.85, y: -0.28, z: 0.62, rx: 0.22, ry: 0.5, rz: 0.3, s: 0.62 },
-    { shot: 7, x: 2.8, y: 0.88, z: 0.66, rx: -0.18, ry: -0.5, rz: -0.34, s: 0.54 },
+    { shot: 0, x: -2.45, y: 0.5, z: 0.35, rx: 0.04, ry: 0.42, rz: -0.1, s: 1.5 },
+    { shot: 1, x: -2.0, y: 2.0, z: -1.6, rx: 0.0, ry: 0.18, rz: 0.06, s: 1.0 },
+    { shot: 2, x: 1.9, y: 2.2, z: -2.6, rx: 0.0, ry: -0.06, rz: 0.04, s: 1.2 },
+    { shot: 3, x: 2.3, y: 1.6, z: -1.3, rx: 0.0, ry: -0.24, rz: -0.08, s: 0.95 },
+    { shot: 4, x: 2.55, y: 0.35, z: 0.3, rx: 0.0, ry: -0.46, rz: 0.12, s: 1.5 },
+    { shot: 5, x: -2.8, y: -1.35, z: 0.6, rx: 0.16, ry: 0.3, rz: 0.2, s: 1.15 },
+    { shot: 6, x: 2.25, y: -1.05, z: 0.45, rx: 0.08, ry: -0.3, rz: -0.18, s: 1.1 },
+    { shot: 7, x: -3.2, y: -0.25, z: 0.7, rx: 0.2, ry: 0.5, rz: 0.3, s: 0.6 },
+    { shot: 8, x: 0.4, y: -1.7, z: 0.5, rx: 0.1, ry: -0.1, rz: 0.16, s: 0.6 },
   ];
 
   const items = mobile ? LAYOUT.slice(0, 5) : LAYOUT;
@@ -121,8 +114,10 @@ export function createShardComposition({ portraitTex }) {
 
   items.forEach((cfg, idx) => {
     const isAccent = idx >= 7;
+    const entry = shardTextures[cfg.shot % shardTextures.length];
+    const ar = Math.min(1.5, Math.max(0.72, entry.ar || 1));
     const w = 1.0 * cfg.s;
-    const h = (isAccent ? 0.8 : 1.0) * cfg.s;
+    const h = (isAccent ? 0.8 : 1.0) * cfg.s * ar;
 
     const pts = jagged(w, h, rnd, w * 0.16);
     const shape = new THREE.Shape(pts);
@@ -140,120 +135,64 @@ export function createShardComposition({ portraitTex }) {
       vertexShader: shardVertex,
       fragmentShader: shardFragment,
       uniforms: {
-        uShot: { value: portraitTex[cfg.shot % portraitTex.length] },
+        uShot: { value: entry.tex },
         uTime: { value: 0 },
-        uAlpha: { value: 0.72 },
+        uAlpha: { value: 1 },
         uGlint: { value: 0 },
-        uPortrait: { value: 1 },
       },
+      transparent: true,
+      depthWrite: false,
       side: THREE.DoubleSide,
     });
 
     const mesh = new THREE.Mesh(geo, mat);
-    const hero = {
-      pos: new THREE.Vector3(cfg.x * mobileScale, cfg.y * mobileScale, cfg.z),
-      rot: new THREE.Euler(cfg.rx, cfg.ry, cfg.rz),
-      s: cfg.s * (mobile ? 0.82 : 1),
-    };
 
-    // ring slot around the portal
-    let target = null;
-    if (!isAccent) {
-      const a = (-90 + idx * (360 / 7)) * (Math.PI / 180);
-      target = {
-        pos: new THREE.Vector3(
-          RING_CENTER.x + Math.cos(a) * RING_RADIUS,
-          RING_CENTER.y + Math.sin(a) * RING_RADIUS * 0.92,
-          RING_CENTER.z
-        ),
-        rot: new THREE.Euler(0, 0, a + Math.PI / 2),
-        s: mobile ? 0.62 : 0.78,
-      };
-    }
+    const dir = new THREE.Vector2(cfg.x, cfg.y);
+    if (dir.lengthSq() < 0.001) dir.set(0.3, 0.25);
+    dir.normalize();
 
     mesh.userData = {
-      hero,
-      target,
-      delay: idx * 0.05 + rnd() * 0.14,
+      hero: {
+        pos: new THREE.Vector3(cfg.x * mobileScale, cfg.y * mobileScale, cfg.z),
+        rot: new THREE.Euler(cfg.rx, cfg.ry, cfg.rz),
+        s: cfg.s * (mobile ? 0.82 : 1),
+      },
+      dir,
+      delay: idx * 0.04 + rnd() * 0.12,
       phase: rnd() * Math.PI * 2,
-      bow: (rnd() - 0.5) * 1.2,
-      bowAxis: new THREE.Vector3(rnd() - 0.5, rnd() * 0.6 + 0.4, rnd() - 0.5).normalize(),
-      isAccent,
-      idx,
     };
 
     group.add(mesh);
   });
 
-  /* ---------- pointer parallax ---------- */
-  const pointer = { x: 0, y: 0 };
-  window.addEventListener('pointermove', (e) => {
-    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
-  });
-
-  /* ---------- timeline ---------- */
-  const alphaTrack = [
-    { t: 0.0, value: 0.72 },
-    { t: 0.84, value: 0.72 },
-    { t: 0.95, value: 0.78 },
-    { t: 1.0, value: 0.78 },
-  ];
-
-  const _p = new THREE.Vector3();
-  const _rot = new THREE.Euler();
-
-  function update(t, dt, time) {
-    const p = range(t, 0.86, 0.97);
-    const alpha = track(alphaTrack, t);
-    group.rotation.y = pointer.x * 0.05 * (1 - p);
-    group.rotation.x = pointer.y * 0.03 * (1 - p);
+  function update(t, _dt, time) {
+    group.rotation.y = pointer.x * 0.05;
+    group.rotation.x = pointer.y * 0.03;
 
     for (const m of group.children) {
       const d = m.userData;
-      const { hero, target } = d;
+      const { hero } = d;
+      const out = range(t, 0.5 + d.delay * 0.3, 1);
 
-      if (target) {
-        const l = smooth(clamp((p - d.delay) / 0.7, 0, 1));
-        _p.lerpVectors(hero.pos, target.pos, l);
-        const arc = Math.sin(Math.PI * l) * d.bow * 0.5;
-        _p.addScaledVector(d.bowAxis, arc);
+      const px =
+        hero.pos.x + d.dir.x * out * 3.2 + Math.sin(time * 0.42 + d.phase) * 0.08 + pointer.x * 0.18 * (1 - out);
+      const py =
+        hero.pos.y + d.dir.y * out * 2.2 + Math.cos(time * 0.36 + d.phase * 1.3) * 0.08 - pointer.y * 0.14 * (1 - out);
+      const pz = hero.pos.z + out * 4.6;
+      m.position.set(px, py, pz);
 
-        m.position.copy(_p);
-        const drift = (1 - l) * 0.075;
-        m.position.x += Math.sin(time * 0.42 + d.phase) * drift + pointer.x * 0.16 * (1 - l);
-        m.position.y += Math.cos(time * 0.36 + d.phase * 1.3) * drift - pointer.y * 0.12 * (1 - l);
+      m.rotation.set(
+        hero.rot.x + Math.sin(time * 0.22 + d.phase) * 0.05,
+        hero.rot.y + Math.cos(time * 0.18 + d.phase) * 0.07,
+        hero.rot.z + Math.sin(time * 0.3 + d.phase * 1.2) * 0.06 + d.dir.x * out * 0.5
+      );
 
-        _rot.set(
-          lerp(hero.rot.x, target.rot.x, l),
-          lerp(hero.rot.y, target.rot.y, l),
-          lerp(hero.rot.z, target.rot.z, l) + Math.sin(time * 0.5 + d.phase) * 0.05 * (1 - l)
-        );
-        m.rotation.copy(_rot);
-        m.scale.setScalar(lerp(hero.s, target.s, l));
+      m.scale.setScalar(hero.s * (1 + out * 0.7));
 
-        const u = m.material.uniforms;
-        u.uGlint.value = Math.exp(-Math.pow((p - (d.delay + 0.5)) * 3.6, 2)) * 0.5;
-        u.uAlpha.value = alpha;
-        u.uTime.value = time;
-      } else {
-        const dir = new THREE.Vector3(hero.pos.x, hero.pos.y, 0).normalize();
-        const out = p * 0.8;
-        m.position.set(
-          hero.pos.x + dir.x * out + Math.sin(time * 0.3 + d.phase) * 0.1 + pointer.x * 0.2,
-          hero.pos.y + dir.y * out + Math.cos(time * 0.26 + d.phase * 1.7) * 0.09 - pointer.y * 0.14,
-          hero.pos.z
-        );
-        m.rotation.set(
-          hero.rot.x + Math.sin(time * 0.22 + d.phase) * 0.06,
-          hero.rot.y + Math.cos(time * 0.18 + d.phase) * 0.08,
-          hero.rot.z + Math.sin(time * 0.3 + d.phase * 1.2) * 0.07
-        );
-        m.scale.setScalar(hero.s * (1 + p * 0.06));
-        const u = m.material.uniforms;
-        u.uAlpha.value = alpha * (1 - p * 0.4);
-        u.uTime.value = time;
-      }
+      const u = m.material.uniforms;
+      u.uTime.value = time;
+      u.uAlpha.value = 1 - out * 0.85;
+      u.uGlint.value = Math.exp(-Math.pow((out - 0.22) * 4.0, 2)) * 0.32;
     }
   }
 

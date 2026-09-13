@@ -3,100 +3,141 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Elysiaa — hope after the fall</title>
+    <title>Elysiaa — The Wanderer</title>
     <meta
       name="description"
-      content="Elysiaa — a broken mirror that mends. Fragments of a student, a part-time developer, a dreamer."
+      content="Elysiaa — the wanderer's portfolio. Not a hero, not a savior, just someone chasing a better tomorrow. Fragments of the past, the focus of the present, the world ahead."
     />
+    <meta name="theme-color" content="#0a0f14" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090909'/%3E%3Cpath d='M16 6l2.2 7.8L26 16l-7.8 2.2L16 26l-2.2-7.8L6 16l7.8-2.2z' fill='%23f2efe9'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0f14'/%3E%3Cpath d='M16 5l2.4 8.6L27 16l-8.6 2.4L16 27l-2.4-8.6L5 16l8.6-2.4z' fill='%23f7d9a0'/%3E%3C/svg%3E"
     />
   </head>
   <body>
     <canvas id="world" aria-hidden="true"></canvas>
     <div id="grain" aria-hidden="true"></div>
     <div id="vignette" aria-hidden="true"></div>
-    <div class="frame" aria-hidden="true">
-      <span class="corner tl"></span>
-      <span class="corner tr"></span>
-      <span class="corner bl"></span>
-      <span class="corner br"></span>
-    </div>
-    <div id="eidolon-nodes" class="eidolon-nodes" aria-hidden="true"></div>
+
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="chrome">
+      <a class="brand" href="#home">Elysiaa</a>
+
+      <button id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span></span>
+        <span class="sr-only">Menu</span>
+      </button>
+      <nav id="site-nav" class="nav" aria-label="Primary"></nav>
+
+      <span class="compass" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1">
+          <circle cx="16" cy="16" r="10.5" />
+          <path d="M16 3v26M3 16h26" opacity="0.35" />
+          <path d="M16 8.2 18.4 13.6 23.8 16 18.4 18.4 16 23.8 13.6 18.4 8.2 16 13.6 13.6z" />
+        </svg>
+      </span>
+    </header>
 
     <main id="content">
-      <section id="hero" class="section hero">
-        <header class="brand"><span class="brand-mark">✦</span> elysiaa</header>
-        <div class="hero-tag">the mirror broke&nbsp;·&nbsp;but it can mend</div>
-        <div class="scroll-hint">
-          <span class="hint-text">scroll to heal</span>
-          <span class="hint-line"></span>
+      <section id="home" class="hero" data-section>
+        <div class="hero-copy">
+          <p class="kicker">The Wanderer — student · builder · dreamer · still becoming</p>
+          <h1 class="hero-title"><span class="hero-initial">E</span>lysiaa</h1>
+          <p class="hero-couplet">Not a hero, not a savior,<br />just someone chasing a better tomorrow.</p>
+        </div>
+
+        <p class="hero-quote">Fragments of the past,<br />the focus of the present,<br />the world ahead.</p>
+
+        <div id="socials" class="socials" aria-label="Elsewhere"></div>
+
+        <div class="scroll-cue" aria-hidden="true">
+          <span class="cue-track"><span class="cue-dot"></span></span>
+          <span class="cue-label">Scroll</span>
         </div>
       </section>
 
-      <section id="guardian" class="section guardian">
-        <p class="guardian-line g1">every fall leaves a crack</p>
-        <p class="guardian-line g2">every crack holds light</p>
-        <p class="guardian-sub">a guardian of elysium — hope after the fall</p>
+      <section id="projects" class="section" data-section>
+        <div class="inner">
+          <header class="section-head reveal">
+            <span class="kicker">Things I forged</span>
+            <h2 class="section-title">Projects</h2>
+            <p class="section-lead">Work held together by cracks, sealed with light.</p>
+          </header>
+          <ol id="project-list" class="catalogue"></ol>
+        </div>
       </section>
 
-      <section id="about" class="section paper">
+      <section id="labs" class="section section--tint" data-section>
         <div class="inner">
-          <div class="cat-head">
+          <header class="section-head reveal">
+            <span class="kicker">The workshop</span>
+            <h2 class="section-title">Labs</h2>
+            <p class="section-lead">Experiments in light, language and the machinery under the dream.</p>
+          </header>
+          <ol id="lab-list" class="catalogue"></ol>
+        </div>
+      </section>
+
+      <section id="writing" class="section" data-section>
+        <div class="inner">
+          <header class="section-head reveal">
+            <span class="kicker">Field notes</span>
+            <h2 class="section-title">Writing</h2>
+            <p class="section-lead">Notes from the road, once they are ready to be read.</p>
+          </header>
+          <ol id="writing-list" class="catalogue catalogue--notes"></ol>
+        </div>
+      </section>
+
+      <section id="about" class="section section--tint" data-section>
+        <div class="inner">
+          <header class="section-head reveal">
             <span class="kicker">Fragments of me</span>
-            <h2 class="cat-title">A Catalogue<br />of Cracks</h2>
-            <p class="cat-lead">
-              every piece of the mirror is a piece of the story —<br />
+            <h2 class="section-title">About</h2>
+            <p class="section-lead">
+              Every piece of the mirror is a piece of the story —<br />
               some shattered, some shining, all mine.
             </p>
-          </div>
-          <ol id="plate-list" class="plates"></ol>
+          </header>
+          <ol id="about-list" class="catalogue catalogue--callouts"></ol>
         </div>
       </section>
 
-      <section id="projects" class="section charcoal">
-        <div class="inner">
-          <div class="cat-head">
-            <span class="kicker">Things I forged</span>
-            <h2 class="cat-title">Plates &amp; Works</h2>
-            <p class="cat-lead">work held together by cracks, sealed with light.</p>
-          </div>
-          <ol id="project-list" class="plates plates--dark"></ol>
+      <section id="contact" class="section contact" data-section>
+        <div class="contact-inner">
+          <span class="kicker reveal">The world ahead</span>
+          <h2 class="section-title contact-title reveal">The Gate</h2>
+          <p class="contact-line reveal">the next chapter — a better future, better people, a better place</p>
+          <a class="contact-mail reveal" id="contact-mail" href="mailto:contacts@elysiaa.com">contacts@elysiaa.com</a>
+          <div id="socials-end" class="socials socials--end"></div>
+          <div class="signoff" aria-hidden="true">Elysiaa</div>
         </div>
-      </section>
-
-      <section id="contact" class="section contact">
-        <h2 class="cat-title contact-title">The Gate<br />to Elysium</h2>
-        <p class="contact-line">the next chapter — a better future, better people, a better place</p>
-        <a class="contact-mail" id="contact-mail" href="mailto:hello@elysiaa.dev">hello@elysiaa.dev</a>
-        <div id="socials" class="socials"></div>
-        <div class="signoff">elysiaa</div>
       </section>
 
       <footer class="footer">
-        <span>built with three.js · character by Quaternius (CC0) · inspired by hope</span>
+        <span>built with three.js · wanderer &amp; fragments from the concept sheet · inspired by hope</span>
       </footer>
     </main>
 
     <div id="loader" class="loader">
-      <div class="loader-brand">elysiaa</div>
+      <div class="loader-brand">Elysiaa</div>
       <div class="loader-bar"><div id="loader-fill" class="loader-fill"></div></div>
-      <div class="loader-note">mending the mirror</div>
+      <div class="loader-note">igniting the horizon</div>
     </div>
 
     <div id="no-webgl" class="no-webgl" hidden>
       <div class="no-webgl-inner">
-        <h1>elysiaa</h1>
+        <h1>Elysiaa</h1>
         <p>
-          your browser cannot render the mirror —<br />
-          please open this site in a modern browser with WebGL enabled.
+          your browser cannot render this world —<br />
+          please open the site in a modern browser with WebGL enabled.
         </p>
       </div>
     </div>

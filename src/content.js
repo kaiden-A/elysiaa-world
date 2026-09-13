@@ -1,33 +1,37 @@
+export const NAV = [
+  { id: 'home', label: 'Home' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'labs', label: 'Labs' },
+  { id: 'writing', label: 'Writing' },
+  { id: 'about', label: 'About' },
+];
+
+export const WANDERER = {
+  name: 'The Wanderer',
+  roles: ['Student', 'Builder', 'Dreamer', 'Still becoming'],
+  tagline: 'Not a hero, not a savior, just someone chasing a better tomorrow.',
+};
+
 export const ROLES = [
   {
-    title: 'The Student',
-    text: 'Twenty years old, computer science, entering my second year. One year of building behind me — and everything still ahead.',
-    tags: ['cs student', 'year two'],
+    kicker: 'The Face',
+    text: 'Fragments of the past, shaping the future.',
   },
   {
-    title: 'The Builder',
-    text: 'Twenty-plus websites shipped — for work, for fun, for my club. Every one of them a fragment of the same mirror.',
-    tags: ['20+ sites', 'work · fun · club'],
+    kicker: 'The Cloak',
+    text: 'Tears of every version of myself.',
   },
   {
-    title: 'The Full-Stack',
-    text: 'React and Next.js in front; FastAPI, Express, NestJS behind. I like the whole journey of an idea — from spark to server.',
-    tags: ['react', 'nextjs', 'fastapi', 'express', 'nestjs'],
+    kicker: 'The Hand',
+    text: 'Builds, creates, keeps going.',
   },
   {
-    title: 'The Engineer',
-    text: 'Docker, CI/CD pipelines, Google Cloud, Cloudflare — the scaffolding beneath the dream, built to hold weight.',
-    tags: ['docker', 'ci/cd', 'gcp', 'cloudflare'],
+    kicker: 'The Spear',
+    text: 'Direction in the chaos.',
   },
   {
-    title: 'The Keeper of Data',
-    text: 'MySQL, PostgreSQL, MongoDB — and lately, very at home in Neon. Every story needs somewhere to live.',
-    tags: ['mysql', 'postgres', 'mongodb', 'neon'],
-  },
-  {
-    title: 'The Curious',
-    text: 'Web development, machine learning, applied LLM systems — the cracks I keep following toward the light.',
-    tags: ['web', 'ml', 'applied llm'],
+    kicker: 'The Broken Mirror',
+    text: 'Not a broken self, but a thousand pieces of who I am — and who I\u2019m becoming.',
   },
 ];
 
@@ -44,24 +48,51 @@ export const PROJECTS = [
   },
   {
     title: 'Elysiaa',
-    text: 'This mirror. A symbol of the next chapter — the search for a better future, better people, a better place.',
+    text: 'This world. A symbol of the next chapter — the search for a better future, better people, a better place.',
     tags: ['three.js', 'glsl', 'hope'],
   },
 ];
 
-export const EIDOLONS = [
-  { n: 1, title: 'A Fragile Dawn' },
-  { n: 2, title: 'Twenty Ships' },
-  { n: 3, title: 'Athena Awakens' },
-  { n: 4, title: 'A Crack That Holds Light' },
-  { n: 5, title: 'A Guardian Rises' },
-  { n: 6, title: 'The Gate to Elysium' },
+export const LABS = [
+  {
+    title: 'Athena’s Workshop',
+    text: 'Applied LLM systems — a spokesperson built from scratch, prompt architecture, evaluation loops, and the long road to an agent that thinks before it speaks.',
+    tags: ['ai', 'llm', 'python'],
+  },
+  {
+    title: 'Shader Studies',
+    text: 'GLSL sketches in light, glass and weather. Every experiment here fed the horizon you are looking at.',
+    tags: ['glsl', 'three.js', 'npr'],
+  },
+  {
+    title: 'Tools of the Trade',
+    text: 'Small automation and dev-tooling builds that take friction out of the everyday — the quiet work that makes the loud work possible.',
+    tags: ['tooling', 'ci/cd', 'automation'],
+  },
+];
+
+export const WRITING = [
+  {
+    title: 'On building in the open',
+    text: 'Why the unfinished work belongs on the shelf too.',
+    status: 'Draft',
+  },
+  {
+    title: 'What the mirror taught me',
+    text: 'Notes from a year of shipping, breaking and mending.',
+    status: 'Draft',
+  },
+  {
+    title: 'Toward a better world',
+    text: 'Better people, better tools, and the places they build together.',
+    status: 'Draft',
+  },
 ];
 
 export const SOCIALS = [
-  { label: 'GitHub', href: 'https://github.com/kaiden-A' },
-  { label: 'Linkdlen', href: 'https://x.com/' },
-  { label: 'Whatsapp', href: 'https://wa.link/nbghai' },
+  { label: 'GitHub', href: 'https://github.com/kaiden-A', icon: 'github' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/', icon: 'linkedin' },
+  { label: 'Email', href: 'mailto:contacts@elysiaa.com', icon: 'mail' },
 ];
 
 export const CONTACT_MAIL = 'contacts@elysiaa.com';
