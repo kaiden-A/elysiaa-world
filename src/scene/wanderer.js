@@ -173,157 +173,122 @@ export function createWanderer({ manager }) {
   group.add(backlight);
 
   /*
-   * Tier B: a baked cloth-sim pass of the cloak (alpha WebM) replaces the mid
-   * still wherever alpha video decodes for real. The video element is attached
-   * to a 2x2px in-DOM holder — Chrome suspends frame delivery for detached
-   * media, which leaves the WebGL texture frozen on its last frame. Safari,
-   * save-data, reduced-motion and anything whose decoder drops the alpha keep
-   * the layered still + Tier A. `?cloak=video|still` forces either path and
-   * `window.__cloak.stat()` reports what happened.
+   * Tier B: the figure is a 32-frame moving pass (green-screen render keyed to
+   * alpha, 0-4s) packed into a WebP sprite atlas and crossfaded inside the
+   * material (4s cycle, driven by `time`). No <video> element involved, so
+   * browser media heuristics can never freeze it, it carries its own alpha, and
+   * it runs in Safari and Firefox too. Reduced motion, save-data and
+   * `?cloak=still` keep the layered stills; `window.__cloak.stat()` reports
+   * what happened.
    */
-  const ua = navigator.userAgent;
-  const webkitOnly = /Safari/.test(ua) && !/Chrome|Chromium|CriOS|Edg|Firefox|FxiOS/.test(ua);
   const saveData = !!(navigator.connection && navigator.connection.saveData);
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const cloakParam = new URLSearchParams(window.location.search).get('cloak');
 
-  const videoMat = new THREE.MeshBasicMaterial({
+  const ATLAS_COLS = 8;
+  const ATLAS_ROWS = 4;
+  const ATLAS_FRAMES = ATLAS_COLS * ATLAS_ROWS;
+  const LOOP_SECONDS = 4.0;
+  /* sized/placed so the keyed figure stands exactly on the painted figure */
+  const ATLAS_SIZE = new THREE.Vector2(2.234, 3.97);
+  const ATLAS_OFFSET = new THREE.Vector2(0, -0.037);
+  /* a hair of blur so the moving pass sits in the painted world */
+  const BLUR_TEXEL = 0.007;
+
+  const atlasMat = new THREE.MeshBasicMaterial({
     color: 0xfff4e4,
     transparent: true,
     depthWrite: false,
     toneMapped: false,
     opacity: 0,
   });
-  const videoMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), videoMat);
-  videoMesh.visible = false;
-  pivot.add(videoMesh);
+  let atlasShader = null;
+  atlasMat.onBeforeCompile = (shader) => {
+    shader.uniforms.uAtlasA = { value: new THREE.Vector2(0, 0) };
+    shader.uniforms.uAtlasB = { value: new THREE.Vector2(0, 0) };
+    shader.uniforms.uAtlasBlend = { value: 0 };
+    atlasShader = shader;
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+uniform vec2 uAtlasA;
+uniform vec2 uAtlasB;
+uniform float uAtlasBlend;
+vec2 atlasUvOff(vec2 uv, vec2 cell, vec2 off) {
+  vec2 local = clamp(uv + off, vec2(0.0), vec2(1.0));
+  vec2 origin = vec2(cell.x, ${ATLAS_ROWS}.0 - 1.0 - cell.y) / vec2(${ATLAS_COLS}.0, ${ATLAS_ROWS}.0);
+  return origin + local / vec2(${ATLAS_COLS}.0, ${ATLAS_ROWS}.0);
+}`
+      )
+      .replace(
+        '#include <map_fragment>',
+        `#ifdef USE_MAP
+  float blurR = ${BLUR_TEXEL.toFixed(4)};
+  vec4 atlasAcc = texture2D(map, atlasUvOff(vMapUv, uAtlasA, vec2(0.0)));
+  atlasAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasA, vec2(blurR, 0.0)));
+  atlasAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasA, vec2(-blurR, 0.0)));
+  atlasAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasA, vec2(0.0, blurR)));
+  atlasAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasA, vec2(0.0, -blurR)));
+  vec4 atlasBAcc = texture2D(map, atlasUvOff(vMapUv, uAtlasB, vec2(0.0)));
+  atlasBAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasB, vec2(blurR, 0.0)));
+  atlasBAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasB, vec2(-blurR, 0.0)));
+  atlasBAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasB, vec2(0.0, blurR)));
+  atlasBAcc += texture2D(map, atlasUvOff(vMapUv, uAtlasB, vec2(0.0, -blurR)));
+  vec4 sampledDiffuseColor = mix(atlasAcc * 0.2, atlasBAcc * 0.2, uAtlasBlend);
+  diffuseColor *= sampledDiffuseColor;
+#endif`
+      );
+  };
+  const atlasMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), atlasMat);
+  atlasMesh.scale.set(ATLAS_SIZE.x, ATLAS_SIZE.y, 1);
+  atlasMesh.visible = false;
+  pivot.add(atlasMesh);
 
   const debug = (window.__cloak = {
-    webkitOnly,
     saveData,
     reduced,
     state: 'off',
-    video: null,
+    active: false,
+    frame: 0,
+    blend: 0,
     stat() {
-      const v = this.video;
-      if (!v) return { state: this.state, inDom: false };
-      const q = v.getVideoPlaybackQuality ? v.getVideoPlaybackQuality() : {};
       return {
         state: this.state,
-        inDom: document.body.contains(v),
-        paused: v.paused,
-        readyState: v.readyState,
-        currentTime: +v.currentTime.toFixed(2),
-        totalFrames: q.totalVideoFrames ?? -1,
-        droppedFrames: q.droppedVideoFrames ?? -1,
+        active: this.active,
+        frame: this.frame,
+        blend: +this.blend.toFixed(3),
       };
     },
   });
 
-  let videoFade = 0;
-  const wantVideo = cloakParam === 'video' || (cloakParam !== 'still' && !webkitOnly && !saveData && !reduced);
-  if (wantVideo) {
-    const holder = document.createElement('div');
-    holder.setAttribute('aria-hidden', 'true');
-    holder.style.cssText =
-      'position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:0.01;overflow:hidden;pointer-events:none';
-    const video = document.createElement('video');
-    video.muted = true;
-    video.defaultMuted = true;
-    video.loop = true;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    video.setAttribute('disablepictureinpicture', '');
-    video.preload = 'auto';
-    video.style.cssText = 'width:2px;height:2px';
-    video.src = '/plates/wanderer-cloak.webm';
-    holder.appendChild(video);
-    (document.body || document.documentElement).appendChild(holder);
-    debug.video = video;
+  let motionFade = 0;
+  const wantAtlas = cloakParam !== 'still' && !saveData && !reduced;
+  if (wantAtlas) {
     debug.state = 'loading';
-
-    let tries = 0;
-    const giveUp = (state) => {
-      debug.state = state;
-      video.removeAttribute('src');
-      video.load();
-      holder.remove();
-      debug.video = null;
-    };
-    const activate = () => {
-      /* decode one real frame: confirms frames flow and the alpha survived */
-      const c = document.createElement('canvas');
-      c.width = video.videoWidth;
-      c.height = video.videoHeight;
-      const ctx = c.getContext('2d', { willReadFrequently: true });
-      ctx.clearRect(0, 0, c.width, c.height);
-      ctx.drawImage(video, 0, 0);
-      const d = ctx.getImageData(0, 0, c.width, c.height).data;
-      let semi = 0;
-      let painted = 0;
-      for (let i = 3; i < d.length; i += 4) {
-        const a = d[i];
-        if (a > 0) {
-          painted++;
-          if (a < 250) semi++;
-        }
+    new THREE.TextureLoader(manager).load(
+      '/plates/wanderer-cloak-atlas.webp',
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        /* no mipmaps: they would blend across atlas cells at a distance */
+        tex.generateMipmaps = false;
+        tex.minFilter = THREE.LinearFilter;
+        atlasMat.map = tex;
+        atlasMat.needsUpdate = true;
+        atlasMesh.visible = true;
+        debug.active = true;
+        debug.state = 'active';
+      },
+      undefined,
+      () => {
+        debug.state = 'error';
       }
-      if (painted < 256) {
-        if (++tries < 8) window.setTimeout(attempt, 250);
-        else giveUp('no-frames');
-        return;
-      }
-      if (semi < 64) {
-        giveUp('alpha-unsupported');
-        return;
-      }
-      const tex = new THREE.VideoTexture(video);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = 4;
-      videoMat.map = tex;
-      videoMat.needsUpdate = true;
-      videoMesh.visible = true;
-      debug.state = 'playing';
-      video.play().catch(() => {
-        debug.state = 'play-blocked';
-      });
-    };
-    const attempt = () => {
-      if (debug.state === 'playing' || debug.state === 'alpha-unsupported') return;
-      if (video.readyState >= 2 && video.videoWidth) activate();
-      else if (++tries < 8) window.setTimeout(attempt, 250);
-      else giveUp('no-data');
-    };
-    video.addEventListener('loadeddata', attempt);
-    video.addEventListener('canplay', attempt);
-    video.addEventListener('error', () => giveUp('error'));
-    video.addEventListener('pause', () => {
-      if (!videoMesh.visible) return;
-      window.setTimeout(() => {
-        if (video.paused && videoMesh.visible) {
-          video.play().catch(() => {
-            debug.state = 'play-blocked';
-          });
-        }
-      }, 400);
-    });
-    const kick = () => {
-      document.removeEventListener('pointerdown', kick);
-      document.removeEventListener('touchstart', kick);
-      if (video.paused) {
-        video.play().then(() => {
-          if (debug.state === 'play-blocked') debug.state = 'playing';
-        }, () => {});
-      }
-    };
-    document.addEventListener('pointerdown', kick);
-    document.addEventListener('touchstart', kick);
+    );
   } else {
     debug.state = cloakParam === 'still'
       ? 'forced-still'
-      : reduced ? 'reduced-motion' : saveData ? 'save-data' : webkitOnly ? 'webkit' : 'off';
+      : reduced ? 'reduced-motion' : saveData ? 'save-data' : 'off';
   }
 
   const smooth = new THREE.Vector2();
@@ -341,19 +306,32 @@ export function createWanderer({ manager }) {
     pivot.rotation.z = Math.sin(time * 0.3) * 0.004;
 
     const vis = Math.min(1, 1.12 * (1 - out));
-    if (videoMesh.visible) videoFade = Math.min(1, videoFade + dt * 1.6);
-    const stillFade = 1 - videoFade;
+    if (atlasMesh.visible) motionFade = Math.min(1, motionFade + dt * 1.6);
+    const stillFade = 1 - motionFade;
     for (let i = 0; i < meshes.length; i++) {
       const m = meshes[i];
       m.position.x = offsets[i].x + smooth.x * (LAYERS[i].kx - KX_MAX);
       m.position.y = offsets[i].y - smooth.y * (LAYERS[i].ky - KY_MAX);
-      m.material.opacity = vis * (i === 1 ? stillFade : 1);
-      if (waves[i] && (i !== 1 || stillFade > 0.02)) waves[i].update(time);
+      m.material.opacity = vis * stillFade;
+      if (waves[i] && stillFade > 0.02) waves[i].update(time);
     }
-    if (videoMesh.visible) {
-      videoMesh.position.copy(meshes[1].position);
-      videoMesh.scale.copy(meshes[1].scale);
-      videoMesh.material.opacity = vis * videoFade;
+    if (atlasMesh.visible) {
+      atlasMesh.position.copy(meshes[1].position);
+      atlasMesh.position.x += ATLAS_OFFSET.x;
+      atlasMesh.position.y += ATLAS_OFFSET.y;
+      atlasMat.opacity = vis * motionFade;
+      if (atlasShader) {
+        const phase = ((time / LOOP_SECONDS) % 1 + 1) % 1;
+        const x = phase * ATLAS_FRAMES;
+        const i0 = Math.floor(x) % ATLAS_FRAMES;
+        const i1 = (i0 + 1) % ATLAS_FRAMES;
+        atlasShader.uniforms.uAtlasA.value.set(i0 % ATLAS_COLS, Math.floor(i0 / ATLAS_COLS));
+        atlasShader.uniforms.uAtlasB.value.set(i1 % ATLAS_COLS, Math.floor(i1 / ATLAS_COLS));
+        const blend = x - Math.floor(x);
+        atlasShader.uniforms.uAtlasBlend.value = blend;
+        debug.frame = i0;
+        debug.blend = blend;
+      }
     }
 
     backlight.position.x = pivot.position.x;
