@@ -7,6 +7,7 @@ const KEYS = {
   enabled: 'elysiaa:music:enabled',
   track: 'elysiaa:music:track',
   shuffle: 'elysiaa:music:shuffle',
+  hint: 'elysiaa:music:hint',
 };
 
 const store = {
@@ -83,6 +84,7 @@ export function initAudio() {
     <button class="music-open" type="button" aria-label="Choose music" aria-expanded="false" aria-controls="music-panel">
       ${CARET_ICON}
     </button>
+    <span class="music-hint" aria-hidden="true">tap for sound</span>
     <div id="music-panel" class="music-panel" role="group" aria-label="Soundtrack" tabindex="-1" hidden>
       <p class="music-heading">Soundtrack</p>
       <ul class="music-list">
@@ -103,8 +105,19 @@ export function initAudio() {
   const toggle = host.querySelector('.music-toggle');
   const openBtn = host.querySelector('.music-open');
   const panel = host.querySelector('.music-panel');
+  const hint = host.querySelector('.music-hint');
   const trackButtons = [...host.querySelectorAll('.music-track')];
   const shuffleBtn = host.querySelector('.music-shuffle');
+
+  /* ---------- hint ---------- */
+
+  const hideHint = () => {
+    if (!hint || hint.classList.contains('done')) return;
+    hint.classList.add('done');
+    store.set(KEYS.hint, '1');
+  };
+
+  if (!state.enabled || readBool(KEYS.hint, false)) hideHint();
 
   /* ---------- state helpers ---------- */
 
@@ -117,6 +130,7 @@ export function initAudio() {
       if (i === state.index) btn.setAttribute('aria-current', 'true');
       else btn.removeAttribute('aria-current');
     });
+    if (on) hideHint();
   };
 
   const persist = () => {
@@ -182,7 +196,7 @@ export function initAudio() {
       audio.src = MUSIC[state.index].file;
       state.playing = false;
       render();
-      return;
+      return true;
     }
 
     fadeToken += 1;
@@ -197,14 +211,15 @@ export function initAudio() {
         state.playing = false;
         render();
       }
-      return;
+      return false;
     }
 
-    if (token !== loadToken) return;
+    if (token !== loadToken) return false;
 
     state.playing = true;
     render();
     await fadeTo(BASE_VOLUME);
+    return true;
   };
 
   const stop = async () => {
@@ -305,16 +320,41 @@ export function initAudio() {
 
   /* ---------- first gesture ---------- */
 
-  const onFirstGesture = (e) => {
-    window.removeEventListener('pointerdown', onFirstGesture);
-    window.removeEventListener('keydown', onFirstGesture);
-    if (host.contains(e.target)) return;
-    state.started = true;
-    if (state.enabled) load(state.index);
+  const ACTIVATION_EVENTS = ['pointerdown', 'touchend', 'mouseup', 'click', 'keydown'];
+  const SOFT_EVENTS = ['scroll', 'wheel'];
+
+  let softTried = false;
+  let attempting = false;
+
+  const detachGestures = () => {
+    ACTIVATION_EVENTS.forEach((type) => window.removeEventListener(type, onActivation));
+    SOFT_EVENTS.forEach((type) => window.removeEventListener(type, onSoft));
   };
 
-  window.addEventListener('pointerdown', onFirstGesture);
-  window.addEventListener('keydown', onFirstGesture);
+  const attemptStart = async () => {
+    if (state.started || attempting || !state.enabled) return;
+    attempting = true;
+    const ok = await load(state.index);
+    attempting = false;
+    if (ok) {
+      state.started = true;
+      detachGestures();
+    }
+  };
+
+  function onActivation(e) {
+    if (host.contains(e.target)) return;
+    attemptStart();
+  }
+
+  function onSoft() {
+    if (softTried) return;
+    softTried = true;
+    attemptStart();
+  }
+
+  ACTIVATION_EVENTS.forEach((type) => window.addEventListener(type, onActivation));
+  SOFT_EVENTS.forEach((type) => window.addEventListener(type, onSoft, { passive: true }));
 
   render();
 }

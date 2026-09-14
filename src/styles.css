@@ -215,6 +215,27 @@ body {
   transform: rotate(180deg);
 }
 
+.music-hint {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  white-space: nowrap;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(247, 217, 160, 0.78);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s var(--ease), visibility 0.8s;
+}
+
+.music-hint.done {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .music-toggle .music-bar {
   transform-origin: center;
 }
@@ -1041,8 +1062,13 @@ body {
   .hero > .socials,
   .scroll-cue,
   .music-panel,
+  .music-hint,
   .music-toggle[aria-pressed='true'] .music-bar {
     animation: none;
+  }
+
+  .music-hint {
+    transition: none;
   }
 }
 
