@@ -112,6 +112,11 @@ content:
         label: Tags
         type: string
         list: true
+      - name: link
+        label: Link
+        type: string
+        pattern: "^https?://"
+        description: Optional — the company or site URL, e.g. https://www.deta.com.my/
       - name: order
         label: Order
         type: number
