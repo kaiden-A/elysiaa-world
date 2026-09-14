@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "title": "Fantasy Adventure Quest",
+    "file": "/media/audio/alex-morgan-fantasy-adventure-quest-537478.mp3",
+    "credit": "Alex Morgan",
+    "default": true,
+    "order": 1
+  },
+  {
+    "title": "Magic Fantasy Fairy Tale Music",
+    "file": "/media/audio/hitslab-magic-fantasy-fairy-tale-music-431276.mp3",
+    "credit": "HitsLab",
+    "order": 2
+  },
+  {
+    "title": "Fantasy Dreamy Adventure Music",
+    "file": "/media/audio/solarflex-fantasy-dreamy-adventure-music-509902.mp3",
+    "credit": "Solarflex",
+    "order": 3
+  }
+]
