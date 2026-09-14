@@ -21,6 +21,11 @@ content:
         label: Tags
         type: string
         list: true
+      - name: link
+        label: Link
+        type: string
+        pattern: "^https?://"
+        description: Optional — full URL, e.g. https://athena.motionukict.com
       - name: order
         label: Order
         type: number
@@ -48,6 +53,11 @@ content:
         label: Tags
         type: string
         list: true
+      - name: link
+        label: Link
+        type: string
+        pattern: "^https?://"
+        description: Optional — full URL, e.g. https://athena.motionukict.com
       - name: order
         label: Order
         type: number

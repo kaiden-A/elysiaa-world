@@ -2,5 +2,6 @@
   "title": "Athena",
   "text": "An AI built from scratch to be the spokesperson for my club — my first true step into applied LLMs, and the build that changed how I see software.",
   "tags": ["ai", "llm", "club"],
+  "link": "https://athena.motionukict.com",
   "order": 1
 }

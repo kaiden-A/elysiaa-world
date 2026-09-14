@@ -31,7 +31,15 @@ function plate(item, index, label) {
   el.innerHTML = `
     <span class="plate-no">${item.kicker || label}</span>
     <div>
-      ${item.title ? `<h3 class="plate-title">${item.title}</h3>` : ''}
+      ${
+        item.title
+          ? `<h3 class="plate-title">${
+              item.link
+                ? `<a class="plate-link" href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}<span class="plate-link-arrow" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
+                : item.title
+            }</h3>`
+          : ''
+      }
       <p class="plate-text">${item.text}</p>
       ${
         item.tags
