@@ -1,3 +1,11 @@
+media:
+  - name: music
+    label: Music
+    input: public/media/audio
+    output: /media/audio
+    extensions: [mp3, m4a, ogg]
+    rename: safe
+
 content:
   - name: personal
     label: Personal
@@ -162,6 +170,40 @@ content:
         label: Text
         type: text
         required: true
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: music
+    label: Music
+    type: file
+    path: content/music.json
+    format: json
+    list: true
+    view:
+      primary: title
+      sort: [order, title]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: file
+        label: Audio file
+        type: file
+        required: true
+        options:
+          media: music
+          extensions: [mp3, m4a, ogg]
+      - name: credit
+        label: Credit
+        type: string
+        description: Optional — artist / licence, shown in the track list.
+      - name: default
+        label: Default track
+        type: boolean
+        description: The track that starts first for new visitors.
       - name: order
         label: Order
         type: number

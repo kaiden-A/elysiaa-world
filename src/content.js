@@ -1,5 +1,7 @@
 const modules = import.meta.glob('../content/**/*.json', { eager: true, import: 'default' });
 
+import music from '../content/music.json';
+
 function load(section) {
   return Object.entries(modules)
     .filter(([path]) => path.startsWith(`../content/${section}/`))
@@ -13,6 +15,8 @@ export const CHARITY = load('charity');
 export const WORKS = load('works');
 export const QUOTES = load('quotes');
 export const ABOUT = load('about');
+
+export const MUSIC = [...music].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
 export const NAV = [
   { id: 'home', label: 'Home' },

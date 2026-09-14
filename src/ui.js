@@ -9,6 +9,7 @@ import {
   SOCIALS,
   CONTACT_MAIL,
 } from './content.js';
+import { initAudio } from './audio.js';
 
 const ICONS = {
   github:
@@ -150,6 +151,7 @@ export function initUI() {
 
   initNav();
   initSpy();
+  initAudio();
 
   document.querySelectorAll('.plate, .reveal').forEach((el) => io.observe(el));
 }

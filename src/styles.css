@@ -165,6 +165,202 @@ body {
   display: block;
 }
 
+/* music */
+
+.chrome-end {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.music {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.music-toggle,
+.music-open {
+  display: block;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(242, 232, 213, 0.62);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8);
+  transition: color 0.35s var(--ease);
+}
+
+.music-toggle:hover,
+.music-open:hover,
+.music-toggle[aria-pressed='true'] {
+  color: var(--sun);
+}
+
+.music-toggle svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.music-open svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  transition: transform 0.35s var(--ease);
+}
+
+.music-open[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.music-toggle .music-bar {
+  transform-origin: center;
+}
+
+.music-toggle[aria-pressed='true'] .music-bar {
+  animation: music-pulse 2.4s var(--ease) infinite;
+}
+
+.music-toggle .music-bar:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.music-toggle .music-bar:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+.music-toggle .music-bar:nth-child(4) {
+  animation-delay: 0.54s;
+}
+
+.music-toggle .music-bar:nth-child(5) {
+  animation-delay: 0.72s;
+}
+
+@keyframes music-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.music-panel {
+  position: fixed;
+  top: calc(var(--pad) + 3.1rem);
+  right: var(--pad);
+  width: min(19rem, calc(100vw - 2 * var(--pad)));
+  padding: 1.15rem 1.2rem 0.2rem;
+  background: rgba(7, 11, 15, 0.94);
+  border: 1px solid rgba(242, 232, 213, 0.16);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  z-index: 10;
+  animation: fade-in 0.5s var(--ease) both;
+}
+
+.music-panel[hidden] {
+  display: none;
+}
+
+.music-heading {
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(242, 232, 213, 0.48);
+}
+
+.music-list {
+  list-style: none;
+  margin: 0.9rem 0 0.6rem;
+}
+
+.music-track {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-left: 1px solid rgba(242, 232, 213, 0.16);
+  padding: 0.55rem 0.2rem 0.6rem 0.9rem;
+  cursor: pointer;
+  color: rgba(242, 232, 213, 0.68);
+  transition: color 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.music-track:hover {
+  color: var(--parchment);
+}
+
+.music-track[aria-current='true'] {
+  color: var(--parchment);
+  border-left-color: var(--sun);
+}
+
+.music-track-title {
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.music-credit {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--sans);
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(242, 232, 213, 0.4);
+}
+
+.music-shuffle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(242, 232, 213, 0.14);
+  padding: 0.85rem 0.2rem;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(242, 232, 213, 0.5);
+  transition: color 0.35s var(--ease);
+}
+
+.music-shuffle:hover {
+  color: rgba(242, 232, 213, 0.8);
+}
+
+.music-shuffle::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sun);
+  box-shadow: 0 0 10px rgba(247, 217, 160, 0.9);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.music-shuffle[aria-pressed='true'] {
+  color: var(--parchment);
+}
+
+.music-shuffle[aria-pressed='true']::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* nav */
 
 .nav {
@@ -843,7 +1039,9 @@ body {
   .hero-copy,
   .hero-quote,
   .hero > .socials,
-  .scroll-cue {
+  .scroll-cue,
+  .music-panel,
+  .music-toggle[aria-pressed='true'] .music-bar {
     animation: none;
   }
 }
@@ -931,6 +1129,15 @@ body {
 
   .catalogue--callouts .plate-no {
     padding-top: 0;
+  }
+
+  .chrome-end {
+    gap: 0.7rem;
+  }
+
+  .music-toggle svg {
+    width: 22px;
+    height: 22px;
   }
 
   .compass svg {
