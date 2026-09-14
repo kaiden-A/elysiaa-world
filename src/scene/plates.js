@@ -14,7 +14,7 @@ function glow(ctx, x, y, r, color) {
 }
 
 /** The citadel on the horizon — silhouette with backlight, towers and a waterfall. */
-export function makeCastleTexture() {
+function makeCastleTexture() {
   const W = 1024;
   const H = 640;
   const c = document.createElement('canvas');
@@ -134,7 +134,7 @@ export function makeCastleTexture() {
 }
 
 /** A floating rock island with a lit grass-capped top. */
-export function makeIslandTexture(seed = 1) {
+function makeIslandTexture(seed = 1) {
   const W = 640;
   const H = 420;
   const c = document.createElement('canvas');
@@ -195,7 +195,7 @@ export function makeIslandTexture(seed = 1) {
 }
 
 /** Almost-black foreground rocks that frame the composition. */
-export function makeRocksTexture(seed = 3) {
+function makeRocksTexture(seed = 3) {
   const W = 900;
   const H = 420;
   const c = document.createElement('canvas');

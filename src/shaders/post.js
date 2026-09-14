@@ -13,7 +13,6 @@ uniform sampler2D uScene;
 uniform sampler2D uNoise;
 uniform float uTime;
 uniform float uAspect;
-uniform float uDim;
 uniform float uRays;
 uniform vec2 uSun;
 uniform vec2 uRes;
@@ -70,8 +69,6 @@ void main() {
   q.x *= uAspect;
   float vig = smoothstep(1.05, 0.35, length(q));
   col *= mix(0.55, 1.0, vig);
-
-  col *= uDim;
 
   gl_FragColor = vec4(col, 1.0);
 }

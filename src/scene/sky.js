@@ -7,7 +7,7 @@ const SUN_FALLBACK = new THREE.Vector3(10.4, -2.1, -28);
 const SUN_PLATE = new THREE.Vector3(6.26, 3.6, -28);
 
 /** Hand-painted golden-hour sky, used until public/plates/sky.jpg is provided. */
-export function makeSkyTexture() {
+function makeSkyTexture() {
   const W = 1024;
   const H = 512;
   const c = document.createElement('canvas');

@@ -6,12 +6,6 @@ export const NAV = [
   { id: 'about', label: 'About' },
 ];
 
-export const WANDERER = {
-  name: 'The Wanderer',
-  roles: ['Student', 'Builder', 'Dreamer', 'Still becoming'],
-  tagline: 'Not a hero, not a savior, just someone chasing a better tomorrow.',
-};
-
 export const ROLES = [
   {
     kicker: 'The Face',

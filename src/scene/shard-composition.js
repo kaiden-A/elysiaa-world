@@ -152,7 +152,7 @@ export async function createShardComposition({ shardTextures, manager }) {
     gltf.scene.traverse((o) => {
       if (o.isMesh) glbMeshes[o.name] = o;
     });
-  } catch (e) {
+  } catch {
     /* flat fallback below keeps the composition alive */
   }
 

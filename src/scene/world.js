@@ -74,7 +74,6 @@ export function createWorld({ noiseTex, manager }) {
     uNoise: { value: noiseTex },
     uTime: { value: 0 },
     uAspect: { value: 1 },
-    uDim: { value: 1 },
     uRays: { value: 0 },
     uSun: { value: new THREE.Vector2(0.7, 0.65) },
     uRes: { value: new THREE.Vector2(1, 1) },
@@ -225,7 +224,6 @@ export function createWorld({ noiseTex, manager }) {
     if (!state.wanderer) return;
 
     postUniforms.uTime.value = time;
-    postUniforms.uDim.value = 1;
 
     // the wanderer breathes, then falls away as the journey begins
     state.wanderer.update(t, dt, time);
@@ -262,5 +260,5 @@ export function createWorld({ noiseTex, manager }) {
     renderer.render(postScene, postCam);
   }
 
-  return { init, update, resize, renderer };
+  return { init, update };
 }
