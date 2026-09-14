@@ -1,6 +1,10 @@
 {
-  "title": "Athena’s Workshop",
-  "text": "The applied LLM work behind Athena — prompt architecture, evaluation loops, and the long road to an agent that thinks before it speaks.",
-  "tags": ["ai", "llm", "python"],
+  "title": "Club Ecosystems",
+  "text": "I’ve built a handful of applications, not to boast about what I’ve made, but because I believe technology should make people’s lives easier. I build to improve efficiency within the club, reduce unnecessary work, and give students more room to simply be students—while still making it easier for everyone to get the job done.\n",
+  "tags": [
+    "ecosystems",
+    "for others",
+    "efficiency"
+  ],
   "order": 2
 }

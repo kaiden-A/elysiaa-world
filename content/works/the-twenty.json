@@ -1,6 +1,11 @@
 {
-  "title": "The Twenty",
-  "text": "Twenty-plus websites for work, clients and friends — fragments of practice, each one sharper than the last.",
-  "tags": ["web", "client work"],
+  "title": "Deta Technologies",
+  "text": "During my time at Deta Technologies, I grew into a full-stack developer by working on meaningful projects and gaining hands-on experience in real-world software development. I learned how industry standards, development practices, and professional workflows operate, and more importantly, I learned to apply those principles to the way I approach my day-to-day work.\n",
+  "tags": [
+    "fullstack",
+    "client work",
+    "AI",
+    "industry standard"
+  ],
   "order": 1
 }
