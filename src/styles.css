@@ -893,6 +893,14 @@ body {
     padding-top: 0;
   }
 
+  .catalogue--callouts .plate {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogue--callouts .plate-no {
+    padding-top: 0;
+  }
+
   .compass svg {
     width: 22px;
     height: 22px;
