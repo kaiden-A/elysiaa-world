@@ -1,6 +1,11 @@
 {
   "title": "Elysiaa",
   "text": "This world. Built for no one but curiosity — a place to test what shaders, pixels and a stubborn idea can become.",
-  "tags": ["three.js", "glsl", "personal"],
+  "tags": [
+    "three.js",
+    "glsl",
+    "personal"
+  ],
+  "link": "https://www.elysiaa.com",
   "order": 1
 }
