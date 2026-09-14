@@ -1,4 +1,14 @@
-import { NAV, ROLES, PROJECTS, LABS, WRITING, SOCIALS, CONTACT_MAIL } from './content.js';
+import {
+  NAV,
+  PERSONAL,
+  CLUB,
+  CHARITY,
+  WORKS,
+  QUOTES,
+  ABOUT,
+  SOCIALS,
+  CONTACT_MAIL,
+} from './content.js';
 
 const ICONS = {
   github:
@@ -119,10 +129,12 @@ const io = new IntersectionObserver(
 
 export function initUI() {
   buildNav();
-  fillList('project-list', PROJECTS, (i) => `Plate ${ROMAN[i]}`);
-  fillList('lab-list', LABS, (i) => `Plate ${ROMAN[i]}`);
-  fillList('writing-list', WRITING, (_i, item) => item.status);
-  fillList('about-list', ROLES, (i) => `Plate ${ROMAN[i]}`);
+  fillList('personal-list', PERSONAL, (i) => `Plate ${ROMAN[i]}`);
+  fillList('club-list', CLUB, (i) => `Plate ${ROMAN[i]}`);
+  fillList('charity-list', CHARITY, (i) => `Plate ${ROMAN[i]}`);
+  fillList('works-list', WORKS, (i) => `Plate ${ROMAN[i]}`);
+  fillList('quotes-list', QUOTES, (_i, item) => item.source);
+  fillList('about-list', ABOUT, (i) => `Plate ${ROMAN[i]}`);
   fillSocials('socials');
   fillSocials('socials-end');
   $('contact-mail').href = `mailto:${CONTACT_MAIL}`;

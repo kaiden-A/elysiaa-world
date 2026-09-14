@@ -1,0 +1,6 @@
+{
+  "title": "Athena’s Workshop",
+  "text": "The applied LLM work behind Athena — prompt architecture, evaluation loops, and the long road to an agent that thinks before it speaks.",
+  "tags": ["ai", "llm", "python"],
+  "order": 2
+}

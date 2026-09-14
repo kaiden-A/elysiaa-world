@@ -1,0 +1,153 @@
+content:
+  - name: personal
+    label: Personal
+    type: collection
+    path: content/personal
+    format: json
+    filename: "{fields.order}-{primary}.json"
+    view:
+      primary: title
+      sort: [order, title]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: text
+        label: Description
+        type: text
+        required: true
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: club
+    label: Club / Social
+    type: collection
+    path: content/club
+    format: json
+    filename: "{fields.order}-{primary}.json"
+    view:
+      primary: title
+      sort: [order, title]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: text
+        label: Description
+        type: text
+        required: true
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: charity
+    label: Charity
+    type: collection
+    path: content/charity
+    format: json
+    filename: "{fields.order}-{primary}.json"
+    view:
+      primary: title
+      sort: [order, title]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: text
+        label: Description
+        type: text
+        required: true
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: works
+    label: Works
+    type: collection
+    path: content/works
+    format: json
+    filename: "{fields.order}-{primary}.json"
+    view:
+      primary: title
+      sort: [order, title]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: text
+        label: Description
+        type: text
+        required: true
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: quotes
+    label: Quotes
+    type: collection
+    path: content/quotes
+    format: json
+    filename: "{fields.order}-{fields.source}.json"
+    view:
+      primary: text
+      sort: [order, source]
+    fields:
+      - name: text
+        label: Quote
+        type: text
+        required: true
+      - name: source
+        label: Source
+        type: string
+      - name: order
+        label: Order
+        type: number
+        required: true
+
+  - name: about
+    label: About
+    type: collection
+    path: content/about
+    format: json
+    filename: "{fields.order}-{primary}.json"
+    view:
+      primary: kicker
+      sort: [order, kicker]
+    fields:
+      - name: kicker
+        label: Heading
+        type: string
+        required: true
+      - name: text
+        label: Text
+        type: text
+        required: true
+      - name: order
+        label: Order
+        type: number
+        required: true
