@@ -3,6 +3,12 @@ import pointer from '../core/pointer.js';
 import { range } from '../core/timeline.js';
 import { makeDotTexture } from '../core/glutils.js';
 
+/* moonlight: the figure and its glow cool down after dark */
+const FIGURE_WARM = new THREE.Color(0xfff4e4);
+const FIGURE_NIGHT = new THREE.Color(0x93a4c9);
+const GLOW_WARM = new THREE.Color(0xffe8c2);
+const GLOW_NIGHT = new THREE.Color(0x9db0d8);
+
 /**
  * The Wanderer — the concept-sheet tableau placed as a three-layer painted
  * stack (back / mid / front) so the figure gains depth under pointer drift.
@@ -293,7 +299,7 @@ vec2 atlasUvOff(vec2 uv, vec2 cell, vec2 off) {
 
   const smooth = new THREE.Vector2();
 
-  function update(t, dt, time) {
+  function update(t, dt, time, night = 0) {
     smooth.x += (pointer.x - smooth.x) * Math.min(1, dt * 1.5);
     smooth.y += (pointer.y - smooth.y) * Math.min(1, dt * 1.5);
 
@@ -313,6 +319,7 @@ vec2 atlasUvOff(vec2 uv, vec2 cell, vec2 off) {
       m.position.x = offsets[i].x + smooth.x * (LAYERS[i].kx - KX_MAX);
       m.position.y = offsets[i].y - smooth.y * (LAYERS[i].ky - KY_MAX);
       m.material.opacity = vis * stillFade;
+      m.material.color.lerpColors(FIGURE_WARM, FIGURE_NIGHT, night);
       if (waves[i] && stillFade > 0.02) waves[i].update(time);
     }
     if (atlasMesh.visible) {
@@ -320,6 +327,7 @@ vec2 atlasUvOff(vec2 uv, vec2 cell, vec2 off) {
       atlasMesh.position.x += ATLAS_OFFSET.x;
       atlasMesh.position.y += ATLAS_OFFSET.y;
       atlasMat.opacity = vis * motionFade;
+      atlasMat.color.lerpColors(FIGURE_WARM, FIGURE_NIGHT, night);
       if (atlasShader) {
         const phase = ((time / LOOP_SECONDS) % 1 + 1) % 1;
         const x = phase * ATLAS_FRAMES;
@@ -336,7 +344,8 @@ vec2 atlasUvOff(vec2 uv, vec2 cell, vec2 off) {
 
     backlight.position.x = pivot.position.x;
     backlight.position.z = pivot.position.z - 0.7;
-    backlightMat.opacity = (0.3 + Math.sin(time * 0.4) * 0.04) * (1 - out);
+    backlightMat.color.lerpColors(GLOW_WARM, GLOW_NIGHT, night);
+    backlightMat.opacity = (0.3 + Math.sin(time * 0.4) * 0.04) * (1 - out) * (1 - night * 0.45);
   }
 
   return { group, update };

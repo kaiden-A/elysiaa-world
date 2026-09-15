@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createTimeline } from './core/timeline.js';
+import { daynight } from './core/daynight.js';
 import { makeNoiseTexture, webglAvailable } from './core/glutils.js';
 import { createWorld } from './scene/world.js';
 import { initUI, setLoadProgress, hideLoader, showNoWebgl } from './ui.js';
@@ -37,7 +38,8 @@ async function boot() {
 
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = timeline.update(dt);
-    world.update(t, dt, reduced ? 0 : clock.elapsedTime);
+    daynight.update(dt);
+    world.update(t, dt, reduced ? 0 : clock.elapsedTime, daynight.state.night);
   }
   requestAnimationFrame(frame);
 }

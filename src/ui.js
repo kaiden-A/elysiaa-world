@@ -9,6 +9,7 @@ import {
   SOCIALS,
   CONTACT_MAIL,
 } from './content.js';
+import { daynight } from './core/daynight.js';
 import { initAudio } from './audio.js';
 
 const ICONS = {
@@ -134,6 +135,21 @@ const io = new IntersectionObserver(
   { threshold: 0.15 }
 );
 
+/* ---------- theme ---------- */
+
+function initTheme() {
+  const btn = $('theme-toggle');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => daynight.toggle());
+
+  daynight.subscribe((mode) => {
+    const night = mode === 'night';
+    btn.setAttribute('aria-pressed', String(night));
+    btn.setAttribute('aria-label', night ? 'Switch to sunset theme' : 'Switch to night theme');
+  });
+}
+
 /* ---------- public ---------- */
 
 export function initUI() {
@@ -151,6 +167,7 @@ export function initUI() {
 
   initNav();
   initSpy();
+  initTheme();
   initAudio();
 
   document.querySelectorAll('.plate, .reveal').forEach((el) => io.observe(el));

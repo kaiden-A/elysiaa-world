@@ -254,6 +254,7 @@ function makeLayer(fallback, cfg) {
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
   mesh.position.set(cfg.x, cfg.y, cfg.z);
   mesh.userData.cfg = cfg;
+  mesh.userData.dim = cfg.dim ?? 0.85;
   mesh.userData.baseY = cfg.y;
   mesh.userData.phase = (cfg.x * 13.7) % (Math.PI * 2);
   fitWidth(mesh);
@@ -311,9 +312,14 @@ export function createPlates({ manager }) {
     );
   });
 
-  function update(t, dt, time) {
+  function update(t, dt, time, night = 0) {
     smooth.x += (pointer.x - smooth.x) * Math.min(1, dt * 1.5);
     smooth.y += (pointer.y - smooth.y) * Math.min(1, dt * 1.5);
+
+    /* moonlight: everything sits lower and cooler after dark */
+    const nr = 1 - night * 0.5;
+    const ng = 1 - night * 0.4;
+    const nb = 1 - night * 0.12;
 
     for (const mesh of layers) {
       const cfg = mesh.userData.cfg;
@@ -322,15 +328,16 @@ export function createPlates({ manager }) {
         mesh.position.y =
           mesh.userData.baseY + Math.sin(time * 0.35 + mesh.userData.phase) * cfg.bob;
       }
+      const near = cfg.brighten ? t * t : 0;
       if (cfg.brighten && mesh.userData.baseScale) {
         // the citadel draws closer and burns brighter near the end of the journey
-        const near = t * t;
         mesh.position.z = cfg.z + near * 4.2;
         const b = mesh.userData.baseScale;
         mesh.scale.set(b.x * (1 + near * 0.25), b.y * (1 + near * 0.25), 1);
-        mesh.material.color.setScalar(0.72 + near * 0.5);
         mesh.material.opacity = 0.85 + near * 0.15;
       }
+      const base = cfg.brighten ? 0.72 + near * 0.5 : mesh.userData.dim;
+      mesh.material.color.setRGB(base * nr, base * ng, base * nb);
     }
   }
 

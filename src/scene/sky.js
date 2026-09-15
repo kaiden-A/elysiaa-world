@@ -2,11 +2,45 @@ import * as THREE from 'three';
 import pointer from '../core/pointer.js';
 import { makeDotTexture } from '../core/glutils.js';
 
-/* fallback sun sits where the procedural sky paints it; the plate has its own */
-const SUN_FALLBACK = new THREE.Vector3(10.4, -2.1, -28);
-const SUN_PLATE = new THREE.Vector3(6.26, 3.6, -28);
+/* the light the post pass aims its rays at — set to the authored sunset */
+const SUN_ANCHOR = new THREE.Vector3(6.26, 3.6, -28);
 
-/** Hand-painted golden-hour sky, used until public/plates/sky.jpg is provided. */
+/* where the sunset's painted sun sits in world space through its own
+ * transform; the night plate is framed onto the same point so the painted
+ * light barely moves while the sky crossfades beneath it */
+const PAINTED_LIGHT = new THREE.Vector3(6.84, -4.32, -28);
+
+const SKY_Z = -30;
+const PLATE_H = 42;
+
+/* The two painted skies. Sunset keeps the exact transform it shipped with;
+ * night preserves its own aspect and is framed so its painted moon lands on
+ * PAINTED_LIGHT. `light` is that light's [u, v] inside the plate, `bot` the
+ * texture v below which the bottom row stretches downward. */
+const SUNSET = 0;
+const NIGHT = 1;
+const PLATES = [
+  {
+    url: '/plates/sky.jpg',
+    legacy: { x: -31.1, y: 1.27, w: 140, h: PLATE_H },
+    bot: 0.3, sat: 0.82, tint: [0.95, 0.99, 1.07],
+  },
+  {
+    url: '/plates/sky-night.jpg',
+    light: [0.7, 0.43],
+    bot: 0.1, sat: 1.0, tint: [1.0, 1.01, 1.05],
+  },
+];
+
+/* the additive halo that blooms over the painted light, per plate */
+const HALO = [
+  { halo: 5, core: 1.6, haloOp: 0.5, coreOp: 0.82 },
+  { halo: 7, core: 2.6, haloOp: 0.22, coreOp: 0.5 },
+];
+const HALO_COLOR = [new THREE.Color(0xffe0a8), new THREE.Color(0xd6e2ff)];
+const CORE_COLOR = [new THREE.Color(0xfff3d6), new THREE.Color(0xe8f0ff)];
+
+/** Hand-painted golden-hour sky, used until the plate files are provided. */
 function makeSkyTexture() {
   const W = 1024;
   const H = 512;
@@ -83,126 +117,180 @@ function makeSkyTexture() {
   return tex;
 }
 
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+/* how much each plate contributes at a given night factor */
+function weights(night) {
+  const n = clamp01(night);
+  return [1 - n, n];
+}
+
+function makeColorMix(out, colors, w) {
+  out.setRGB(
+    colors[0].r * w[0] + colors[1].r * w[1],
+    colors[0].g * w[0] + colors[1].g * w[1],
+    colors[0].b * w[0] + colors[1].b * w[1]
+  );
+}
+
 export function createSky({ manager }) {
   const group = new THREE.Group();
 
-  const uniforms = {
-    uMap: { value: makeSkyTexture() },
-    uTime: { value: 0 },
-    uParallax: { value: new THREE.Vector2() },
-    uBot: { value: 0 },
-  };
+  /* shared across every plate: one time, one pointer drift */
+  const uTime = { value: 0 };
+  const uParallax = { value: new THREE.Vector2() };
 
-  const mat = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: /* glsl */ `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      precision highp float;
-      uniform sampler2D uMap;
-      uniform float uTime;
-      uniform vec2 uParallax;
-      uniform float uBot;
-      varying vec2 vUv;
-      void main() {
-        vec2 uv = vUv;
-        uv.x += uTime * 0.0012 + uParallax.x * 0.012;
-        // below the painted panel, stretch the dark bottom edge downward
-        uv.y = mix(0.0, 1.0, clamp((uv.y - uBot) / max(0.0001, 1.0 - uBot), 0.0, 1.0));
-        uv.y += uParallax.y * 0.006;
-        vec3 col = texture2D(uMap, uv).rgb;
-        // tame the painted saturation: a little less orange, a little more dusk
-        float grey = dot(col, vec3(0.299, 0.587, 0.114));
-        col = mix(vec3(grey), col, 0.82);
-        col *= vec3(0.95, 0.99, 1.07);
-        float side = abs(vUv.x - 0.5) * 2.0;
-        col *= 1.0 - 0.16 * side * side;
-        float vert = abs(vUv.y - 0.5) * 2.0;
-        col *= 1.0 - 0.1 * vert * vert;
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-    depthWrite: false,
-    toneMapped: false,
+  function frame(plane, cfg, aspect) {
+    const h = PLATE_H;
+    const w = h * aspect;
+    plane.scale.set(w, h, 1);
+    plane.position.set(
+      PAINTED_LIGHT.x - (cfg.light[0] - 0.5) * w,
+      PAINTED_LIGHT.y - (cfg.light[1] - 0.5) * h,
+      SKY_Z
+    );
+  }
+
+  const planes = PLATES.map((cfg, i) => {
+    const uniforms = {
+      uMap: { value: makeSkyTexture() },
+      uTime,
+      uParallax,
+      uBot: { value: cfg.bot },
+      uSat: { value: cfg.sat },
+      uTint: { value: new THREE.Vector3(...cfg.tint) },
+      uOpacity: { value: i === SUNSET ? 1 : 0 },
+    };
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        precision highp float;
+        uniform sampler2D uMap;
+        uniform float uTime;
+        uniform vec2 uParallax;
+        uniform float uBot;
+        uniform float uSat;
+        uniform vec3 uTint;
+        uniform float uOpacity;
+        varying vec2 vUv;
+        void main() {
+          vec2 uv = vUv;
+          uv.x += uTime * 0.0012 + uParallax.x * 0.012;
+          // below the painted panel, stretch the dark bottom edge downward
+          uv.y = mix(0.0, 1.0, clamp((uv.y - uBot) / max(0.0001, 1.0 - uBot), 0.0, 1.0));
+          uv.y += uParallax.y * 0.006;
+          vec3 col = texture2D(uMap, uv).rgb;
+          // tame the painted saturation, then a gentle colour cast
+          float grey = dot(col, vec3(0.299, 0.587, 0.114));
+          col = mix(vec3(grey), col, uSat);
+          col *= uTint;
+          float side = abs(vUv.x - 0.5) * 2.0;
+          col *= 1.0 - 0.16 * side * side;
+          float vert = abs(vUv.y - 0.5) * 2.0;
+          col *= 1.0 - 0.1 * vert * vert;
+          gl_FragColor = vec4(col, uOpacity);
+        }
+      `,
+      transparent: i !== SUNSET,
+      depthWrite: false,
+      toneMapped: false,
+    });
+
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+    if (cfg.legacy) {
+      plane.scale.set(cfg.legacy.w, cfg.legacy.h, 1);
+      plane.position.set(cfg.legacy.x, cfg.legacy.y, SKY_Z);
+    } else {
+      frame(plane, cfg, 2);
+    }
+    /* negative render order: the sky always sits behind the shards, wanderer
+     * and atmosphere, which all render in the default transparent batch */
+    plane.renderOrder = i - PLATES.length;
+    plane.userData = { cfg, mat };
+    group.add(plane);
+    return plane;
   });
 
-  const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-  plane.scale.set(80, 42, 1);
-  plane.position.set(0, 4.6, -30);
-  group.add(plane);
+  const loader = new THREE.TextureLoader(manager);
+  planes.forEach((plane) => {
+    const { cfg, mat } = plane.userData;
+    loader.load(
+      cfg.url,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.wrapS = THREE.ClampToEdgeWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.anisotropy = 4;
+
+        const old = mat.uniforms.uMap.value;
+        mat.uniforms.uMap.value = tex;
+        old.dispose();
+        if (!cfg.legacy) frame(plane, cfg, tex.image.width / tex.image.height);
+      },
+      undefined,
+      () => {}
+    );
+  });
 
   const dot = makeDotTexture();
 
   const haloMat = new THREE.SpriteMaterial({
     map: dot,
-    color: 0xffe0a8,
+    color: HALO_COLOR[SUNSET].clone(),
     transparent: true,
-    opacity: 0.5,
+    opacity: HALO[SUNSET].haloOp,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     toneMapped: false,
   });
   const halo = new THREE.Sprite(haloMat);
-  halo.scale.set(15, 15, 1);
+  halo.position.copy(SUN_ANCHOR);
   group.add(halo);
 
   const coreMat = haloMat.clone();
-  coreMat.color.setHex(0xfff3d6);
-  coreMat.opacity = 0.85;
+  coreMat.color.copy(CORE_COLOR[SUNSET]);
+  coreMat.opacity = HALO[SUNSET].coreOp;
   const core = new THREE.Sprite(coreMat);
-  core.scale.set(4.6, 4.6, 1);
+  core.position.copy(SUN_ANCHOR);
   group.add(core);
-
-  const sunPos = SUN_FALLBACK.clone();
-
-  function setSun(v, haloSize, coreSize) {
-    sunPos.copy(v);
-    halo.position.copy(v);
-    core.position.copy(v);
-    halo.scale.set(haloSize, haloSize, 1);
-    core.scale.set(coreSize, coreSize, 1);
-  }
-  setSun(SUN_FALLBACK, 15, 4.6);
-
-  new THREE.TextureLoader(manager).load(
-    '/plates/sky.jpg',
-    (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.wrapS = THREE.ClampToEdgeWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-
-      // frame the painted sun right of center, horizon at mid-screen
-      plane.scale.set(140, 42, 1);
-      plane.position.set(-31.1, 1.27, -30);
-
-      uniforms.uMap.value.dispose();
-      uniforms.uMap.value = tex;
-      uniforms.uBot.value = 0.3;
-      setSun(SUN_PLATE, 5, 1.6);
-      haloMat.opacity = 0.4;
-    },
-    undefined,
-    () => {}
-  );
 
   const smooth = new THREE.Vector2();
 
-  function update(_t, dt, time) {
-    uniforms.uTime.value = time;
+  function update(_t, dt, time, night = 0) {
+    const w = weights(night);
+
+    uTime.value = time;
     smooth.x += (pointer.x - smooth.x) * Math.min(1, dt * 1.6);
     smooth.y += (pointer.y - smooth.y) * Math.min(1, dt * 1.6);
-    uniforms.uParallax.value.copy(smooth);
+    uParallax.value.copy(smooth);
     group.position.x = smooth.x * -0.55;
     group.position.y = smooth.y * -0.22;
 
-    haloMat.opacity = 0.5 * (0.9 + Math.sin(time * 0.35) * 0.1);
-    coreMat.opacity = 0.82 + Math.sin(time * 0.6) * 0.07;
+    for (let i = 0; i < planes.length; i++) {
+      planes[i].material.uniforms.uOpacity.value = w[i];
+    }
+
+    const haloSize = HALO[0].halo * w[0] + HALO[1].halo * w[1];
+    const coreSize = HALO[0].core * w[0] + HALO[1].core * w[1];
+    halo.scale.set(haloSize, haloSize, 1);
+    core.scale.set(coreSize, coreSize, 1);
+
+    haloMat.opacity =
+      (HALO[0].haloOp * w[0] + HALO[1].haloOp * w[1]) * (0.9 + Math.sin(time * 0.35) * 0.1);
+    coreMat.opacity =
+      (HALO[0].coreOp * w[0] + HALO[1].coreOp * w[1]) * (1 + Math.sin(time * 0.6) * 0.08);
+
+    makeColorMix(haloMat.color, HALO_COLOR, w);
+    makeColorMix(coreMat.color, CORE_COLOR, w);
   }
 
-  return { group, update, sunPos };
+  return { group, update, sunPos: SUN_ANCHOR.clone() };
 }

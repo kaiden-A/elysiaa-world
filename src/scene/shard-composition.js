@@ -69,6 +69,7 @@ uniform float uTime;
 uniform float uAlpha;
 uniform float uGlint;
 uniform float uThickness;
+uniform float uNight;
 
 varying vec2 vUv;
 varying vec3 vNormalW;
@@ -82,8 +83,12 @@ void main() {
   vec3 N = normalize(vNormalW);
   float rim = pow(1.0 - abs(dot(N, V)), 1.7);
 
-  vec3 glass = vec3(0.075, 0.08, 0.09);
-  vec3 ink = shot * vec3(1.38, 1.32, 1.2);
+  /* sparkle warm by day, moonlight blue by night */
+  vec3 lamp = mix(vec3(1.0, 0.94, 0.78), vec3(0.72, 0.82, 1.1), uNight);
+  float lift = 1.0 - 0.35 * uNight;
+
+  vec3 glass = mix(vec3(0.075, 0.08, 0.09), vec3(0.05, 0.06, 0.1), uNight);
+  vec3 ink = shot * mix(vec3(1.38, 1.32, 1.2), vec3(0.88, 0.94, 1.12), uNight);
   vec3 col = mix(glass, ink, 0.92);
 
   // extruded walls/bevels read from the object-space normal, thickness scales it
@@ -91,21 +96,21 @@ void main() {
   float thick = 1.0 + wall * (uThickness * 6.0);
 
   float sheen = (0.3 + 0.7 * length(shot)) * rim;
-  col += vec3(1.0, 0.94, 0.78) * sheen * (0.42 + 0.28 * wall);
+  col += lamp * sheen * (0.42 + 0.28 * wall) * lift;
 
   // lit broken edge catching the light
   float edge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
   float outline = smoothstep(0.06, 0.012, edge);
-  col += vec3(1.0, 0.95, 0.8) * outline * (0.26 + 0.12 * sin(uTime * 1.2 + vUv.x * 34.0)) * thick;
+  col += lamp * outline * (0.26 + 0.12 * sin(uTime * 1.2 + vUv.x * 34.0)) * thick * lift;
 
   float g1 = pow(max(sin(vUv.x * 40.0 + uTime * 2.0) * sin(vUv.y * 40.0 - uTime * 1.6), 0.0), 26.0);
-  col += vec3(1.0, 0.97, 0.86) * g1 * 0.15;
+  col += lamp * g1 * 0.15 * lift;
 
   // glint rolling across the real bevels as the shard turns
   float g2 = pow(max(dot(N, normalize(vec3(-0.3, 0.5, 0.8))), 0.0), 10.0);
-  col += vec3(1.0, 0.94, 0.78) * g2 * (0.025 + 0.22 * wall) * (0.6 + 0.4 * sin(uTime * 0.8 + vPosO.y * 3.0));
+  col += lamp * g2 * (0.025 + 0.22 * wall) * (0.6 + 0.4 * sin(uTime * 0.8 + vPosO.y * 3.0));
 
-  col += vec3(1.0, 0.95, 0.82) * uGlint;
+  col += lamp * uGlint;
 
   gl_FragColor = vec4(col, uAlpha);
 }
@@ -177,6 +182,7 @@ export async function createShardComposition({ shardTextures, manager }) {
       uAlpha: { value: 1 },
       uGlint: { value: 0 },
       uThickness: { value: thickness },
+      uNight: { value: 0 },
     };
     const base = {
       vertexShader: shardVertex,
@@ -213,7 +219,7 @@ export async function createShardComposition({ shardTextures, manager }) {
     group.add(mesh);
   });
 
-  function update(t, _dt, time) {
+  function update(t, _dt, time, night = 0) {
     group.rotation.y = pointer.x * 0.05;
     group.rotation.x = pointer.y * 0.03;
 
@@ -239,6 +245,7 @@ export async function createShardComposition({ shardTextures, manager }) {
 
       const u = d.uniforms;
       u.uTime.value = time;
+      u.uNight.value = night;
       u.uAlpha.value = 1 - out * 0.85;
       u.uGlint.value = Math.exp(-Math.pow((out - 0.22) * 4.0, 2)) * 0.32;
     }

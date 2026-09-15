@@ -3,6 +3,7 @@
     "title": "Fantasy Adventure Quest",
     "file": "/media/audio/alex-morgan-fantasy-adventure-quest-537478.mp3",
     "credit": "Alex Morgan",
+    "theme": "sunset",
     "default": true,
     "order": 1
   },
@@ -10,6 +11,7 @@
     "title": "Magic Fantasy Fairy Tale Music",
     "file": "/media/audio/hitslab-magic-fantasy-fairy-tale-music-431276.mp3",
     "credit": "HitsLab",
+    "theme": "night",
     "order": 2
   },
   {

@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { makeDotTexture } from '../core/glutils.js';
 
+const EMBER_WARM = new THREE.Color(0xe9dfcd);
+const EMBER_NIGHT = new THREE.Color(0x8fa3c8);
+const MIST_WARM = new THREE.Color(0xd9cdb8);
+const MIST_NIGHT = new THREE.Color(0x93a6c9);
+
 /** Pale dust rising through the air, plus low mist banks. */
 export function createAtmosphere() {
   const group = new THREE.Group();
@@ -62,11 +67,12 @@ export function createAtmosphere() {
     plane.position.set((i - 1) * 3, -2.1 + i * 0.2, -8 + i * 5);
     plane.userData.baseX = plane.position.x;
     plane.userData.phase = i * 2.1;
+    plane.userData.baseOpacity = [0.045, 0.06, 0.04][i];
     mist.push(plane);
     group.add(plane);
   }
 
-  function update(_t, dt, time) {
+  function update(_t, dt, time, night = 0) {
     const { pos: arr, speed: sp, phase: ph } = embers.userData;
     for (let i = 0; i < N; i++) {
       const i3 = i * 3;
@@ -79,8 +85,13 @@ export function createAtmosphere() {
     }
     embers.geometry.attributes.position.needsUpdate = true;
 
+    embers.material.color.lerpColors(EMBER_WARM, EMBER_NIGHT, night);
+    embers.material.opacity = 0.22 * (1 - night * 0.5);
+
     for (const plane of mist) {
       plane.position.x = plane.userData.baseX + Math.sin(time * 0.05 + plane.userData.phase) * 1.8;
+      plane.material.color.lerpColors(MIST_WARM, MIST_NIGHT, night);
+      plane.material.opacity = plane.userData.baseOpacity * (1 - night * 0.35);
     }
   }
 

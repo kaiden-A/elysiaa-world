@@ -1,4 +1,5 @@
 import { MUSIC } from './content.js';
+import { daynight } from './core/daynight.js';
 
 const FADE_MS = 800;
 const BASE_VOLUME = 0.45;
@@ -316,6 +317,14 @@ export function initAudio() {
     }
     const next = pick(1);
     if (next !== -1 && state.enabled) load(next);
+  });
+
+  /* ---------- theme: the soundtrack follows the world ---------- */
+
+  daynight.subscribe((mode) => {
+    const desired = MUSIC.findIndex((t) => t.theme === mode);
+    if (desired < 0 || desired === state.index) return;
+    load(desired, state.enabled && state.playing);
   });
 
   /* ---------- first gesture ---------- */

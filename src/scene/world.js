@@ -75,6 +75,7 @@ export function createWorld({ noiseTex, manager }) {
     uTime: { value: 0 },
     uAspect: { value: 1 },
     uRays: { value: 0 },
+    uNight: { value: 0 },
     uSun: { value: new THREE.Vector2(0.7, 0.65) },
     uRes: { value: new THREE.Vector2(1, 1) },
   };
@@ -220,21 +221,22 @@ export function createWorld({ noiseTex, manager }) {
   const camLook = new THREE.Vector3();
   const sunNdc = new THREE.Vector3();
 
-  function update(t, dt, time) {
+  function update(t, dt, time, night = 0) {
     if (!state.wanderer) return;
 
     postUniforms.uTime.value = time;
+    postUniforms.uNight.value = night;
 
     // the wanderer breathes, then falls away as the journey begins
-    state.wanderer.update(t, dt, time);
+    state.wanderer.update(t, dt, time, night);
 
     // shard constellation: drift, then fly past the camera
-    state.shards.update(t, dt, time);
+    state.shards.update(t, dt, time, night);
 
     // the world layers
-    state.sky.update(t, dt, time);
-    state.plates.update(t, dt, time);
-    state.atmosphere.update(t, dt, time);
+    state.sky.update(t, dt, time, night);
+    state.plates.update(t, dt, time, night);
+    state.atmosphere.update(t, dt, time, night);
 
     // camera: gentle breath along the authored journey
     sampleVec(CAM_POS, t, camPos);
