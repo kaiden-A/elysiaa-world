@@ -30,7 +30,7 @@ export const NAV = [
 
 export const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/kaiden-A', icon: 'github' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/', icon: 'linkedin' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/amirul-ikhwan-041772390', icon: 'linkedin' },
   { label: 'Email', href: 'mailto:contacts@elysiaa.com', icon: 'mail' },
 ];
 

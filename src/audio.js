@@ -64,6 +64,7 @@ export function initAudio() {
     enabled: readBool(KEYS.enabled, true),
     shuffle: readBool(KEYS.shuffle, false),
     playing: false,
+    pending: false,
     started: false,
     index: 0,
   };
@@ -122,8 +123,11 @@ export function initAudio() {
 
   /* ---------- state helpers ---------- */
 
+  /* a play request counts as "on" from the click, not from the promise */
+  const wantSound = () => state.enabled && (state.playing || state.pending);
+
   const render = () => {
-    const on = state.enabled && state.playing;
+    const on = wantSound();
     toggle.setAttribute('aria-pressed', String(on));
     toggle.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
     shuffleBtn.setAttribute('aria-pressed', String(state.shuffle));
@@ -193,6 +197,7 @@ export function initAudio() {
 
     if (!shouldPlay) {
       fadeToken += 1;
+      state.pending = false;
       audio.pause();
       audio.src = MUSIC[state.index].file;
       state.playing = false;
@@ -201,14 +206,17 @@ export function initAudio() {
     }
 
     fadeToken += 1;
+    state.pending = true;
     audio.pause();
     audio.src = MUSIC[state.index].file;
     if (volumeSupported) audio.volume = 0;
+    render();
 
     try {
       await audio.play();
     } catch {
       if (token === loadToken) {
+        state.pending = false;
         state.playing = false;
         render();
       }
@@ -217,6 +225,7 @@ export function initAudio() {
 
     if (token !== loadToken) return false;
 
+    state.pending = false;
     state.playing = true;
     render();
     await fadeTo(BASE_VOLUME);
@@ -226,10 +235,12 @@ export function initAudio() {
   const stop = async () => {
     state.enabled = false;
     persist();
-    if (state.playing) {
-      await fadeTo(0);
-      audio.pause();
-    }
+    /* cancel anything in flight so a pending play cannot resurrect the sound */
+    loadToken += 1;
+    fadeToken += 1;
+    state.pending = false;
+    if (state.playing) await fadeTo(0);
+    audio.pause();
     state.playing = false;
     render();
   };
@@ -274,7 +285,7 @@ export function initAudio() {
 
   toggle.addEventListener('click', () => {
     state.started = true;
-    if (state.enabled && state.playing) stop();
+    if (wantSound()) stop();
     else start();
   });
 
@@ -306,6 +317,8 @@ export function initAudio() {
 
   audio.addEventListener('error', () => {
     if (!audio.src) return;
+    /* a track swap aborts the previous resource — that is not a failure */
+    if (audio.error && audio.error.code === 1) return;
     failed.add(state.index);
     if (failed.size >= MUSIC.length) {
       audio.pause();
@@ -324,7 +337,8 @@ export function initAudio() {
   daynight.subscribe((mode) => {
     const desired = MUSIC.findIndex((t) => t.theme === mode);
     if (desired < 0 || desired === state.index) return;
-    load(desired, state.enabled && state.playing);
+    /* keep the transport running through the swap, including a pending start */
+    load(desired, wantSound());
   });
 
   /* ---------- first gesture ---------- */
@@ -341,7 +355,7 @@ export function initAudio() {
   };
 
   const attemptStart = async () => {
-    if (state.started || attempting || !state.enabled) return;
+    if (state.started || attempting || !state.enabled || state.playing || state.pending) return;
     attempting = true;
     const ok = await load(state.index);
     attempting = false;

@@ -73,14 +73,22 @@ function update(dt) {
     document.body.dataset.phase = phase;
   }
 
-  if (state.mode !== announced) {
-    announced = state.mode;
-    for (const fn of listeners) fn(state.mode);
-  }
+  announce();
+}
+
+function announce() {
+  if (state.mode === announced) return;
+  announced = state.mode;
+  for (const fn of listeners) fn(state.mode);
 }
 
 function toggle() {
-  override = state.mode === 'night' ? 'sunset' : 'night';
+  /* flip from the latest intent (not the frame-delayed visual state), and
+   * tell listeners inside the click so the soundtrack can act on the gesture */
+  const current = override ?? (targetNight() >= 0.5 ? 'night' : 'sunset');
+  override = current === 'night' ? 'sunset' : 'night';
+  state.mode = override;
+  announce();
 }
 
 function subscribe(fn) {
