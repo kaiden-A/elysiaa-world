@@ -2,6 +2,7 @@ import {
   NAV,
   PROJECTS,
   FEATURED,
+  MORE,
   SKILLS,
   EXPERIENCE,
   QUOTES,
@@ -35,9 +36,14 @@ const HTML_ESCAPES = {
 
 const $ = (id) => document.getElementById(id);
 const projectBySlug = new Map(PROJECTS.map((project) => [project.slug, project]));
-const PAGE_REGIONS = ['header.chrome', '#content', '.footer']
+const PAGE_REGIONS = ['header.chrome', '#content']
   .map((selector) => document.querySelector(selector))
   .filter(Boolean);
+const NAV_BACKGROUND_REGIONS = ['#content', '.brand', '.chrome-end']
+  .map((selector) => document.querySelector(selector))
+  .filter(Boolean);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
+const scrollBehavior = () => (REDUCED_MOTION.matches ? 'auto' : 'smooth');
 
 /* ---------- helpers ---------- */
 
@@ -80,8 +86,10 @@ function chips(items = [], className = 'chips') {
 
 function coverArt(project, index) {
   const category = esc(project.category || 'personal');
+  const initial = (project.title || '?').trim().charAt(0).toUpperCase();
   return `<span class="work-cover-art work-cover-art--${category}" aria-hidden="true">
     <span class="work-cover-no">${ROMAN[index] || String(index + 1)}</span>
+    <span class="work-cover-initial">${esc(initial)}</span>
     <span class="work-cover-label">${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}</span>
   </span>`;
 }
@@ -89,7 +97,7 @@ function coverArt(project, index) {
 function coverImage(project, index, alt = '') {
   const src = safeHref(project.cover);
   if (!src) return coverArt(project, index);
-  return `<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" />`;
+  return `<img src="${esc(src)}" alt="${esc(project.coverAlt || alt)}" loading="lazy" decoding="async" />`;
 }
 
 /* ---------- build ---------- */
@@ -189,7 +197,7 @@ function indexRow(project) {
   const index = PROJECTS.indexOf(project);
   const tags = (project.stack || []).slice(0, 3).join(' · ');
   return `
-    <li class="work-row reveal" data-category="${esc(project.category)}">
+    <li class="work-row reveal" data-category="${esc(project.category)}" data-featured="${String(Boolean(project.featured))}">
       <button class="work-row-main" type="button" data-open-project="${esc(project.slug)}">
         <span class="work-row-no">${String(index + 1).padStart(2, '0')}</span>
         <span class="work-row-title">${esc(project.title)}</span>
@@ -199,6 +207,33 @@ function indexRow(project) {
       </button>
     </li>
   `;
+}
+
+function setWorkView(filter) {
+  const isAll = filter === 'all';
+  const featured = $('work-featured');
+  const rows = [...document.querySelectorAll('#work-index .work-row')];
+  let visible = 0;
+
+  rows.forEach((row) => {
+    const show = isAll ? row.dataset.featured !== 'true' : row.dataset.category === filter;
+    row.hidden = !show;
+    if (show) {
+      visible += 1;
+      const number = row.querySelector('.work-row-no');
+      if (number) number.textContent = String(visible).padStart(2, '0');
+    }
+  });
+
+  featured.hidden = !isAll;
+  $('work').classList.toggle('is-filtered', !isAll);
+
+  const label = CATEGORIES.find((category) => category.id === filter)?.label ?? 'All';
+  $('work-index-title').textContent = isAll ? 'More work' : label;
+  $('work-count').textContent = isAll
+    ? `${MORE.length} more ${MORE.length === 1 ? 'project' : 'projects'}`
+    : `${visible} ${visible === 1 ? 'project' : 'projects'}`;
+  $('work-empty').hidden = visible > 0;
 }
 
 function renderWork() {
@@ -214,18 +249,13 @@ function renderWork() {
   filters.addEventListener('click', (event) => {
     const button = event.target.closest('[data-filter]');
     if (!button) return;
-    const filter = button.dataset.filter;
     filters.querySelectorAll('[data-filter]').forEach((item) => {
       item.setAttribute('aria-pressed', String(item === button));
     });
-    let visible = 0;
-    document.querySelectorAll('#work-index .work-row').forEach((row) => {
-      const show = filter === 'all' || row.dataset.category === filter;
-      row.hidden = !show;
-      if (show) visible += 1;
-    });
-    $('work-empty').hidden = visible > 0;
+    setWorkView(button.dataset.filter);
   });
+
+  setWorkView('all');
 }
 
 function renderSkills() {
@@ -234,14 +264,14 @@ function renderSkills() {
       .map((item) => {
         const href = safeHref(item.href);
         const proof = esc(item.proof);
-        return `<li class="skill-item">
-          <span class="skill-name">${esc(item.name)}</span>
-          ${
-            href
-              ? `<a class="skill-proof" href="${esc(href)}"${externalAttrs(href)}>${proof}${/^https?:/.test(href) ? '<span class="sr-only"> (opens in new tab)</span>' : ''}</a>`
-              : `<span class="skill-proof">${proof}</span>`
-          }
-        </li>`;
+        const content = `<span class="skill-name">${esc(item.name)}</span><span class="skill-proof">${proof}</span>`;
+        const row = href
+          ? `<a class="skill-link" href="${esc(href)}"${externalAttrs(href)}${
+              href.startsWith('#project/') ? ' aria-haspopup="dialog"' : ''
+            }>${content}${/^https?:/.test(href) ? '<span class="sr-only"> (opens in new tab)</span>' : ''}</a>`
+          : `<div class="skill-link">${content}</div>`;
+
+        return `<li class="skill-item">${row}</li>`;
       })
       .join('');
 
@@ -256,13 +286,15 @@ function renderSkills() {
 function renderTimeline() {
   $('timeline').innerHTML = EXPERIENCE.map(
     (item) => `<li class="timeline-item reveal">
-      <div class="timeline-head">
+      <div class="timeline-meta">
         ${item.period ? `<span class="timeline-period">${esc(item.period)}</span>` : ''}
         ${item.kind ? `<span class="timeline-kind timeline-kind--${esc(item.kind)}">${esc(item.kind)}</span>` : ''}
       </div>
-      <h4 class="timeline-role">${esc(item.role)}</h4>
-      <p class="timeline-org">${esc(item.org)}</p>
-      ${item.detail ? `<p class="timeline-detail">${esc(item.detail)}</p>` : ''}
+      <div class="timeline-body">
+        <h4 class="timeline-role">${esc(item.role)}</h4>
+        <p class="timeline-org">${esc(item.org)}</p>
+        ${item.detail ? `<p class="timeline-detail">${esc(item.detail)}</p>` : ''}
+      </div>
     </li>`
   ).join('');
 }
@@ -277,7 +309,7 @@ function systemCard(system) {
   return `<article class="system">
     ${
       system.image
-        ? `<div class="system-image"><img src="${esc(safeHref(system.image))}" alt="" loading="lazy" decoding="async" /></div>`
+        ? `<div class="system-image"><img src="${esc(safeHref(system.image))}" alt="${esc(system.imageAlt || '')}" loading="lazy" decoding="async" /></div>`
         : ''
     }
     <div class="system-head">
@@ -298,6 +330,7 @@ function drawerMarkup(project) {
   const cover = safeHref(project.cover);
   const caseStudy = project.caseStudy || {};
   const systems = project.systems || [];
+  const gallery = (project.gallery || []).map((src) => safeHref(src)).filter(Boolean);
   const meta = [
     ['Role', project.role],
     ['Period', project.period],
@@ -306,6 +339,11 @@ function drawerMarkup(project) {
 
   return `
     <header class="drawer-head">
+      ${
+        project.logo
+          ? `<img class="drawer-logo" src="${esc(safeHref(project.logo))}" alt="" loading="lazy" decoding="async" />`
+          : ''
+      }
       <p class="kicker">${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}${
         project.kind === 'ecosystem' ? ' · Ecosystem' : ''
       }</p>
@@ -328,7 +366,7 @@ function drawerMarkup(project) {
           : ''
       }
     </header>
-    ${cover ? `<figure class="drawer-cover"><img src="${esc(cover)}" alt="${esc(project.title)} preview" loading="lazy" decoding="async" /></figure>` : ''}
+    ${cover ? `<figure class="drawer-cover"><img src="${esc(cover)}" alt="${esc(project.coverAlt || `${project.title} preview`)}" loading="lazy" decoding="async" /></figure>` : ''}
     ${project.text ? `<section class="drawer-section"><h3>Overview</h3>${paragraphs(project.text)}</section>` : ''}
     ${caseStudy.problem ? `<section class="drawer-section"><h3>The problem</h3>${paragraphs(caseStudy.problem)}</section>` : ''}
     ${caseStudy.approach ? `<section class="drawer-section"><h3>The approach</h3>${paragraphs(caseStudy.approach)}</section>` : ''}
@@ -336,6 +374,16 @@ function drawerMarkup(project) {
       systems.length
         ? `<section class="drawer-section"><h3>Inside the ecosystem</h3><div class="systems-grid">${systems
             .map(systemCard)
+            .join('')}</div></section>`
+        : ''
+    }
+    ${
+      gallery.length
+        ? `<section class="drawer-section"><h3>More views</h3><div class="drawer-gallery">${gallery
+            .map(
+              (src, index) =>
+                `<img src="${esc(src)}" alt="${esc(project.title)} — view ${index + 1}" loading="lazy" decoding="async" />`
+            )
             .join('')}</div></section>`
         : ''
     }
@@ -399,7 +447,7 @@ function closeDrawer({ updateHistory = true } = {}) {
   document.title = BASE_TITLE;
 
   if (updateHistory && window.location.hash.startsWith('#project/')) {
-    history.pushState('', document.title, window.location.pathname + window.location.search);
+    history.replaceState('', document.title, window.location.pathname + window.location.search);
   }
 
   if (lastFocused && typeof lastFocused.focus === 'function') {
@@ -408,10 +456,26 @@ function closeDrawer({ updateHistory = true } = {}) {
   lastFocused = null;
 }
 
+function scrollToWork() {
+  const work = $('work');
+  if (!work) return;
+  window.scrollTo({
+    top: work.getBoundingClientRect().top + window.scrollY,
+    behavior: scrollBehavior(),
+  });
+}
+
 function syncDrawerFromHash() {
   const match = window.location.hash.match(/^#project\/([a-z0-9-]+)$/);
-  if (match) openProject(match[1], { updateHash: false });
-  else closeDrawer({ updateHistory: false });
+  if (match) {
+    const work = $('work');
+    if (work && window.scrollY < work.offsetTop - window.innerHeight * 0.5) {
+      window.scrollTo({ top: work.offsetTop, behavior: 'auto' });
+    }
+    openProject(match[1], { updateHash: false });
+  } else {
+    closeDrawer({ updateHistory: false });
+  }
 }
 
 function initDrawer() {
@@ -424,9 +488,14 @@ function initDrawer() {
       openProject(opener.dataset.openProject);
       return;
     }
-    if (event.target.closest('[data-drawer-close]')) {
+    const closer = event.target.closest('[data-drawer-close]');
+    if (closer) {
       event.preventDefault();
+      const returnToWork = Boolean(closer.closest('[data-return-work]'));
       closeDrawer();
+      if (returnToWork) {
+        window.setTimeout(scrollToWork, 0);
+      }
     }
   });
 
@@ -473,17 +542,62 @@ function buildNav() {
 function initNav() {
   const nav = $('site-nav');
   const toggle = $('nav-toggle');
+  const label = $('nav-toggle-label');
+  let open = false;
+  let lastFocused = null;
 
-  toggle.addEventListener('click', () => {
-    const open = nav.classList.toggle('open');
+  const setOpen = (next, { restoreFocus = true } = {}) => {
+    open = next;
+    nav.classList.toggle('open', open);
     toggle.setAttribute('aria-expanded', String(open));
-  });
+    if (label) label.textContent = open ? 'Close menu' : 'Menu';
+    document.documentElement.classList.toggle('nav-open', open);
+    NAV_BACKGROUND_REGIONS.forEach((region) => {
+      region.inert = open;
+    });
+
+    if (open) {
+      lastFocused = document.activeElement;
+      window.requestAnimationFrame(() => nav.querySelector('a')?.focus({ preventScroll: true }));
+    } else if (restoreFocus) {
+      const target = lastFocused || toggle;
+      target.focus({ preventScroll: true });
+      lastFocused = null;
+    }
+  };
+
+  toggle.addEventListener('click', () => setOpen(!open));
 
   nav.addEventListener('click', (event) => {
-    if (event.target.closest('a')) {
-      nav.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
+    if (event.target.closest('a')) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (!open) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setOpen(false);
+      return;
     }
+
+    if (event.key !== 'Tab') return;
+
+    const focusable = [toggle, ...nav.querySelectorAll('a')];
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (open && window.innerWidth > 980) setOpen(false, { restoreFocus: false });
   });
 }
 
@@ -544,13 +658,82 @@ function initTheme() {
   });
 }
 
+/* ---------- small interactions ---------- */
+
+function renderAbout() {
+  const [lead, ...rest] = ABOUT;
+  const leadEl = $('about-lead');
+
+  if (lead) {
+    leadEl.innerHTML = `<span class="about-lead-label">${esc(lead.kicker || 'Who I am')}</span>
+      <div class="about-lead-text">${paragraphs(lead.text)}</div>`;
+  } else {
+    leadEl.hidden = true;
+  }
+
+  fillList('about-list', rest, (i) => `Plate ${ROMAN[i]}`);
+}
+
+function initBackToTop() {
+  $('back-to-top')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: scrollBehavior() });
+  });
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand('copy');
+  area.remove();
+}
+
+function initCopyMail() {
+  const button = $('copy-mail');
+  if (!button) return;
+  let timer = 0;
+
+  button.addEventListener('click', async () => {
+    try {
+      await copyText(CONTACT_MAIL);
+      window.clearTimeout(timer);
+      button.textContent = 'Copied';
+      button.classList.add('is-copied');
+      timer = window.setTimeout(() => {
+        button.textContent = 'Copy';
+        button.classList.remove('is-copied');
+      }, 1800);
+    } catch {
+      button.textContent = 'Copy failed';
+      window.setTimeout(() => {
+        button.textContent = 'Copy';
+      }, 1800);
+    }
+  });
+}
+
+function initNoWebglDismiss() {
+  $('no-webgl-dismiss')?.addEventListener('click', () => {
+    $('no-webgl-note').hidden = true;
+  });
+}
+
 /* ---------- public ---------- */
 
 export function initUI() {
   buildNav();
   renderWork();
   renderSkills();
-  fillList('about-list', ABOUT, (i) => `Plate ${ROMAN[i]}`);
+  renderAbout();
   renderTimeline();
   fillList('quotes-list', QUOTES, (_i, item) => item.source);
   fillSocials('socials');
@@ -563,6 +746,9 @@ export function initUI() {
   initTheme();
   initAudio();
   initDrawer();
+  initBackToTop();
+  initCopyMail();
+  initNoWebglDismiss();
   observeReveals();
 }
 
@@ -581,5 +767,6 @@ export function hideLoader() {
 
 export function showNoWebgl() {
   $('no-webgl').hidden = false;
-  $('loader').classList.add('done');
+  $('no-webgl-note').hidden = false;
+  hideLoader();
 }

@@ -141,10 +141,22 @@ content:
           - name: image
             label: Image
             type: image
+          - name: imageAlt
+            label: Image alt text
+            type: string
+            description: Describe the screenshot for screen readers.
       - name: cover
         label: Cover image
         type: image
         description: 16:10 works best. Leave empty for the typographic fallback.
+      - name: coverAlt
+        label: Cover alt text
+        type: string
+        description: Optional — describe the cover for screen readers.
+      - name: logo
+        label: Logo
+        type: image
+        description: Optional — shown in the case-study header.
       - name: gallery
         label: Gallery
         type: image

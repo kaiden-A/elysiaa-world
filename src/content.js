@@ -11,6 +11,7 @@ function load(section) {
 
 export const PROJECTS = load('projects');
 export const FEATURED = PROJECTS.filter((project) => project.featured);
+export const MORE = PROJECTS.filter((project) => !project.featured);
 export const SKILLS = load('skills');
 export const EXPERIENCE = load('experience');
 export const QUOTES = load('quotes');

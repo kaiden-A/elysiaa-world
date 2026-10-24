@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Amirul Ikhwan (Elysiaa) — CS (AI) student, full-stack &amp; applied LLM developer</title>
+    <title>Amirul Ikhwan (Elysiaa) — CS (AI) student &amp; builder</title>
     <meta
       name="description"
       content="Amirul Ikhwan — Elysiaa. Computer Science (AI) student at IIUM building full-stack systems, applied LLMs and agentic tools. Case studies from personal experiments, club work, charity builds and client projects."
@@ -17,7 +17,28 @@
       content="Full-stack systems, applied LLMs and agentic tools — with the problem, the build and the outcome written down."
     />
     <meta property="og:url" content="https://www.elysiaa.com/" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://www.elysiaa.com/og.jpg" />
+    <meta property="og:image:alt" content="The Elysiaa world at sunset, with Amirul Ikhwan's name and role." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://www.elysiaa.com/og.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Amirul Ikhwan",
+        "alternateName": "Elysiaa",
+        "url": "https://www.elysiaa.com/",
+        "jobTitle": "Computer Science (AI) student and full-stack developer",
+        "alumniOf": {
+          "@type": "CollegeOrUniversity",
+          "name": "International Islamic University Malaysia"
+        },
+        "sameAs": [
+          "https://github.com/kaiden-A",
+          "https://www.linkedin.com/in/amirul-ikhwan-041772390"
+        ]
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -31,6 +52,7 @@
   </head>
   <body>
     <canvas id="world" aria-hidden="true"></canvas>
+    <div id="no-webgl" class="no-webgl" hidden aria-hidden="true"></div>
     <div id="grain" aria-hidden="true"></div>
     <div id="vignette" aria-hidden="true"></div>
 
@@ -41,7 +63,7 @@
 
       <button id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="site-nav">
         <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span></span>
-        <span class="sr-only">Menu</span>
+        <span id="nav-toggle-label" class="sr-only">Menu</span>
       </button>
       <nav id="site-nav" class="nav" aria-label="Primary"></nav>
 
@@ -68,13 +90,13 @@
           </span>
         </button>
 
-        <span class="compass" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1">
+        <button id="back-to-top" class="compass" type="button" aria-label="Back to top" title="Back to top">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
             <circle cx="16" cy="16" r="10.5" />
             <path d="M16 3v26M3 16h26" opacity="0.35" />
             <path d="M16 8.2 18.4 13.6 23.8 16 18.4 18.4 16 23.8 13.6 18.4 8.2 16 13.6 13.6z" />
           </svg>
-        </span>
+        </button>
       </div>
     </header>
 
@@ -82,17 +104,32 @@
       <section id="home" class="hero" data-section>
         <div class="hero-copy">
           <p class="kicker">Student · builder · dreamer</p>
-          <h1 class="hero-title"><span class="hero-initial">E</span>lysiaa</h1>
-          <p class="hero-couplet">Not a hero, not a savior,<br />just someone chasing a better tomorrow.</p>
+          <h1 class="hero-title">
+            <span class="hero-initial">E</span>lysiaa<span class="sr-only"> — Amirul Ikhwan</span>
+          </h1>
 
           <div class="hero-identity">
             <span class="hero-name">Amirul Ikhwan</span>
             <span class="hero-role">CS (AI) student · full-stack &amp; applied LLM developer</span>
           </div>
 
+          <p class="hero-summary">
+            I build systems that make studying, running a club, or running a school a little easier.
+          </p>
+
+          <p class="hero-couplet">Not a hero, not a savior,<br />just someone chasing a better tomorrow.</p>
+
           <div class="hero-actions">
             <a class="btn btn--solid" href="#work">Selected work <span aria-hidden="true">↓</span></a>
             <a class="btn" href="#contact">Get in touch</a>
+          </div>
+
+          <div id="no-webgl-note" class="no-webgl-note" role="status" hidden>
+            <p>
+              <strong>Static mode.</strong> The animated world is not available in this browser, but the
+              portfolio is still here.
+            </p>
+            <button id="no-webgl-dismiss" class="no-webgl-dismiss" type="button">Dismiss</button>
           </div>
         </div>
 
@@ -117,11 +154,18 @@
             </p>
           </header>
 
+          <div class="work-toolbar reveal">
+            <span class="work-toolbar-label">Filter</span>
+            <div id="work-filters" class="filters" role="group" aria-label="Filter projects by category"></div>
+          </div>
+
           <div id="work-featured" class="work-featured"></div>
 
           <div class="work-index-head reveal">
-            <h3 class="work-index-title">All projects</h3>
-            <div id="work-filters" class="filters" role="group" aria-label="Filter projects by category"></div>
+            <div class="work-index-heading">
+              <h3 id="work-index-title" class="work-index-title">More work</h3>
+              <p id="work-count" class="work-count" aria-live="polite"></p>
+            </div>
           </div>
 
           <ol id="work-index" class="work-index"></ol>
@@ -157,12 +201,14 @@
             </p>
           </header>
 
-          <ol id="about-list" class="catalogue catalogue--callouts"></ol>
+          <div id="about-lead" class="about-lead reveal"></div>
 
           <div class="timeline-block reveal">
             <h3 class="timeline-title">The path so far</h3>
             <ol id="timeline" class="timeline"></ol>
           </div>
+
+          <ol id="about-list" class="catalogue catalogue--callouts"></ol>
         </div>
       </section>
 
@@ -183,13 +229,17 @@
           <h2 class="section-title contact-title reveal">The Gate</h2>
           <p class="contact-line reveal">the next chapter — a better future, better people, a better place</p>
           <p class="contact-note reveal">For work, collaboration, or a conversation about something you are building.</p>
-          <a class="contact-mail reveal" id="contact-mail" href="mailto:contacts@elysiaa.com">contacts@elysiaa.com</a>
+          <div class="contact-email-row reveal">
+            <a class="contact-mail" id="contact-mail" href="mailto:contacts@elysiaa.com">contacts@elysiaa.com</a>
+            <button id="copy-mail" class="copy-mail" type="button">Copy</button>
+          </div>
           <div id="socials-end" class="socials socials--end"></div>
           <div class="signoff" aria-hidden="true">Elysiaa</div>
         </div>
       </section>
 
       <footer class="footer">
+        <span>© 2026 Amirul Ikhwan · Elysiaa</span>
         <span>built with three.js · wanderer &amp; fragments from the concept sheet · inspired by hope</span>
       </footer>
     </main>
@@ -204,7 +254,9 @@
         tabindex="-1"
       >
         <div class="drawer-top">
-          <span class="drawer-top-label">Project</span>
+          <button class="drawer-back" type="button" data-drawer-close data-return-work>
+            <span aria-hidden="true">←</span> Work
+          </button>
           <button id="drawer-close" class="drawer-close" type="button" data-drawer-close aria-label="Close project">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6 6 18" />
@@ -219,16 +271,6 @@
       <div class="loader-brand">Elysiaa</div>
       <div class="loader-bar"><div id="loader-fill" class="loader-fill"></div></div>
       <div class="loader-note">igniting the horizon</div>
-    </div>
-
-    <div id="no-webgl" class="no-webgl" hidden>
-      <div class="no-webgl-inner">
-        <h1>Elysiaa</h1>
-        <p>
-          your browser cannot render this world —<br />
-          please open the site in a modern browser with WebGL enabled.
-        </p>
-      </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>

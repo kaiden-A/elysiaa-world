@@ -20,7 +20,9 @@
     "Connects with Neoma through MCP, so study data is reachable conversationally."
   ],
   "systems": [],
-  "cover": "",
+  "cover": "/media/projects/elpis-ai/cover.jpg",
+  "coverAlt": "The Elpis AI emblem: a green and gold winged figure with a halo, on a dark green field.",
+  "logo": "/media/projects/elpis-ai/emblem.png",
   "gallery": [],
   "caseStudy": {
     "problem": "I wanted an assistant that could actually do things — reach tools, hold context and act on my behalf — not just answer questions in a chat box.",

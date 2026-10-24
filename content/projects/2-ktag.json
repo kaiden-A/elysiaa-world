@@ -37,7 +37,8 @@
       "image": ""
     }
   ],
-  "cover": "",
+  "cover": "/media/projects/ktag/cover.jpeg",
+  "coverAlt": "The DapurSiswa console for KTAG, showing an overview dashboard with booking volume, volunteer hours and quick actions.",
   "gallery": [],
   "caseStudy": {
     "problem": "The college needed software that fit the way its students actually run things — not a generic system that would be abandoned after handover.",
