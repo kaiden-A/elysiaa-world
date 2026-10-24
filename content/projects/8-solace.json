@@ -1,0 +1,37 @@
+{
+  "title": "Solace",
+  "slug": "solace",
+  "category": "personal",
+  "kind": "project",
+  "hook": "A quiet place to keep thoughts and feelings — and tend to them like a garden.",
+  "text": "Solace is a safe place to store your thoughts and feelings. It is a fun way to do some gardening — planting what you feel, and watching what grows.",
+  "role": "Solo developer",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "Full-stack"
+  ],
+  "highlights": [
+    "A safe place to store thoughts and feelings.",
+    "The gardening metaphor drives the whole interaction.",
+    "Full-stack build, from the data model to the interface."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "Journalling tools tend to feel clinical. I wanted somewhere private that felt alive enough to return to.",
+    "approach": "I built Solace around a gardening metaphor: thoughts are planted, kept and revisited rather than filed away in a list.",
+    "outcome": "Solace is live at solace.elysiaa.com.",
+    "learned": "A strong metaphor is an architecture decision. It changes what the interface asks of you, not just how it looks."
+  },
+  "link": "https://solace.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "self love",
+    "journalling",
+    "personal"
+  ],
+  "order": 8
+}

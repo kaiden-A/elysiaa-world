@@ -1,0 +1,39 @@
+{
+  "title": "Athena",
+  "slug": "athena",
+  "category": "club",
+  "kind": "project",
+  "hook": "An AI spokesperson for my club — my first real step into applied LLMs.",
+  "text": "An AI built from scratch to be the spokesperson for my club — my first true step into applied LLMs, and the build that changed how I see software.",
+  "role": "Developer",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "LLM",
+    "AI",
+    "Web"
+  ],
+  "highlights": [
+    "Built from scratch as the club's spokesperson.",
+    "First applied LLM project, and the one that changed how I approach software.",
+    "Deployed publicly for the club."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "The club needed a voice that could answer for it online — without a person repeating the same introductions and answers.",
+    "approach": "I built Athena from scratch around an LLM, shaping its role, knowledge and responses specifically for the club rather than adapting a generic chatbot.",
+    "outcome": "Athena is live at athena.motionukict.com as the club's AI spokesperson.",
+    "learned": "This was the build that made LLMs feel like a material rather than a demo. The interesting work is in what the model is given and how it is constrained."
+  },
+  "link": "https://athena.motionukict.com",
+  "repo": "",
+  "tags": [
+    "ai",
+    "llm",
+    "club"
+  ],
+  "order": 5
+}

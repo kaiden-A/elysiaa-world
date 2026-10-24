@@ -9,23 +9,41 @@ function load(section) {
     .map(([, data]) => data);
 }
 
-export const PERSONAL = load('personal');
-export const CLUB = load('club');
-export const CHARITY = load('charity');
-export const WORKS = load('works');
+export const PROJECTS = load('projects');
+export const FEATURED = PROJECTS.filter((project) => project.featured);
+export const SKILLS = load('skills');
+export const EXPERIENCE = load('experience');
 export const QUOTES = load('quotes');
 export const ABOUT = load('about');
 
 export const MUSIC = [...music].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-export const NAV = [
-  { id: 'home', label: 'Home' },
+export const CATEGORIES = [
+  { id: 'all', label: 'All' },
   { id: 'personal', label: 'Personal' },
   { id: 'club', label: 'Club / Social' },
   { id: 'charity', label: 'Charity' },
-  { id: 'works', label: 'Works' },
-  { id: 'quotes', label: 'Quotes' },
+  { id: 'client', label: 'Client work' },
+];
+
+export const CATEGORY_LABELS = Object.fromEntries(
+  CATEGORIES.filter((category) => category.id !== 'all').map((category) => [category.id, category.label])
+);
+
+export const STATUS_LABELS = {
+  live: 'Live',
+  'in-progress': 'In progress',
+  past: 'Past',
+  archived: 'Archived',
+};
+
+export const NAV = [
+  { id: 'home', label: 'Home' },
+  { id: 'work', label: 'Work' },
+  { id: 'skills', label: 'Skills' },
   { id: 'about', label: 'About' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'contact', label: 'Contact' },
 ];
 
 export const SOCIALS = [

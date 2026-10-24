@@ -1,0 +1,38 @@
+{
+  "title": "MITS — 100% Digital",
+  "slug": "mits",
+  "category": "charity",
+  "kind": "ecosystem",
+  "hook": "A long-term plan to take my old high school fully digital, one system at a time.",
+  "text": "My old high school. I graduated, and now I am going back — not with a donation, but with a plan: a whole ecosystem of systems that takes MITS fully digital, one building block at a time.",
+  "role": "Volunteer systems developer",
+  "period": "",
+  "status": "in-progress",
+  "featured": true,
+  "stack": [
+    "Systems design",
+    "Digital transformation"
+  ],
+  "highlights": [
+    "A multi-system roadmap rather than a single handover.",
+    "Unpaid work for the school that shaped me.",
+    "Designed to be adopted one building block at a time."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "MITS still runs on processes that have never been digitised. A one-off system would not fix that — the school needs a plan it can absorb gradually.",
+    "approach": "I am treating the school as an ecosystem: identify the building blocks, sequence them so each one stands on its own, and deliver them without disrupting day-to-day operations.",
+    "outcome": "The roadmap is in progress. Systems are being delivered in stages rather than as a single risky launch.",
+    "learned": "Charity work needs a plan that survives after you leave. The measure is not what I ship, but what the school can keep running without me."
+  },
+  "link": "",
+  "repo": "",
+  "tags": [
+    "giving back",
+    "school systems",
+    "ecosystem"
+  ],
+  "order": 3
+}

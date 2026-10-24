@@ -1,0 +1,56 @@
+{
+  "title": "KTAG — Student Systems",
+  "slug": "ktag",
+  "category": "client",
+  "kind": "ecosystem",
+  "hook": "A growing suite of management systems for Kolej Tan Sri Aisyah Ghani, UPM.",
+  "text": "I have had the opportunity to develop several systems for Kolej Tan Sri Aisyah Ghani (KTAG) UPM, including the DapurSiswa Management System and a booking system. It has been a genuine pleasure to work alongside a group of young, visionary students who are passionate about bringing their ideas to life through technology.",
+  "role": "System developer",
+  "period": "",
+  "status": "live",
+  "featured": true,
+  "stack": [
+    "Full-stack",
+    "Web systems",
+    "Systems design"
+  ],
+  "highlights": [
+    "Multiple systems delivered, including DapurSiswa management and booking.",
+    "Built in collaboration with the student team behind the vision.",
+    "Scoped around how the college actually operates, not a demo brief."
+  ],
+  "systems": [
+    {
+      "name": "DapurSiswa Management System",
+      "summary": "Management system for the college's DapurSiswa programme.",
+      "status": "live",
+      "stack": [],
+      "link": "",
+      "image": ""
+    },
+    {
+      "name": "Booking System",
+      "summary": "A booking system for the college.",
+      "status": "live",
+      "stack": [],
+      "link": "",
+      "image": ""
+    }
+  ],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "The college needed software that fit the way its students actually run things — not a generic system that would be abandoned after handover.",
+    "approach": "I worked directly with the student team to scope each system, then built and delivered them as separate pieces: DapurSiswa management and booking.",
+    "outcome": "The systems are live for KTAG, and the relationship continues as new operational needs surface.",
+    "learned": "Client work is mostly translation: turning a lived operational problem into a specification, then into software people will actually use."
+  },
+  "link": "https://ktag.upm.edu.my/?L=bm",
+  "repo": "",
+  "tags": [
+    "client work",
+    "student systems",
+    "operations"
+  ],
+  "order": 2
+}

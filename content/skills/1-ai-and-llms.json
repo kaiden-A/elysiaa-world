@@ -1,0 +1,27 @@
+{
+  "group": "AI & LLMs",
+  "note": "Applied work, not theory.",
+  "order": 1,
+  "items": [
+    {
+      "name": "Applied LLMs",
+      "proof": "Athena · Elpis AI",
+      "href": "#project/athena"
+    },
+    {
+      "name": "Agentic systems",
+      "proof": "Elpis AI",
+      "href": "#project/elpis-ai"
+    },
+    {
+      "name": "MCP tool calling",
+      "proof": "Elpis AI · Neoma",
+      "href": "#project/elpis-ai"
+    },
+    {
+      "name": "LLM integration",
+      "proof": "Athena",
+      "href": "#project/athena"
+    }
+  ]
+}

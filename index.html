@@ -3,12 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Elysiaa — The Wanderer</title>
+    <title>Amirul Ikhwan (Elysiaa) — CS (AI) student, full-stack &amp; applied LLM developer</title>
     <meta
       name="description"
-      content="Elysiaa — the wanderer's portfolio. Not a hero, not a savior, just someone chasing a better tomorrow. Personal experiments, club work, charity builds and client sites — fragments of the past, the focus of the present, the world ahead."
+      content="Amirul Ikhwan — Elysiaa. Computer Science (AI) student at IIUM building full-stack systems, applied LLMs and agentic tools. Case studies from personal experiments, club work, charity builds and client projects."
     />
+    <meta name="author" content="Amirul Ikhwan" />
     <meta name="theme-color" content="#0a0f14" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Amirul Ikhwan (Elysiaa) — CS (AI) student &amp; builder" />
+    <meta
+      property="og:description"
+      content="Full-stack systems, applied LLMs and agentic tools — with the problem, the build and the outcome written down."
+    />
+    <meta property="og:url" content="https://www.elysiaa.com/" />
+    <meta name="twitter:card" content="summary" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -72,9 +81,19 @@
     <main id="content">
       <section id="home" class="hero" data-section>
         <div class="hero-copy">
-          <p class="kicker">The Wanderer — student · builder · dreamer · still becoming</p>
+          <p class="kicker">Student · builder · dreamer</p>
           <h1 class="hero-title"><span class="hero-initial">E</span>lysiaa</h1>
           <p class="hero-couplet">Not a hero, not a savior,<br />just someone chasing a better tomorrow.</p>
+
+          <div class="hero-identity">
+            <span class="hero-name">Amirul Ikhwan</span>
+            <span class="hero-role">CS (AI) student · full-stack &amp; applied LLM developer</span>
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn btn--solid" href="#work">Selected work <span aria-hidden="true">↓</span></a>
+            <a class="btn" href="#contact">Get in touch</a>
+          </div>
         </div>
 
         <p class="hero-quote">Fragments of the past,<br />the focus of the present,<br />the world ahead.</p>
@@ -87,63 +106,43 @@
         </div>
       </section>
 
-      <section id="personal" class="section" data-section>
+      <section id="work" class="section section--tint" data-section>
         <div class="inner">
           <header class="section-head reveal">
-            <span class="kicker">Built for myself</span>
-            <h2 class="section-title">Personal</h2>
+            <span class="kicker">Fragments of the past, the focus of the present</span>
+            <h2 class="section-title">Selected work</h2>
             <p class="section-lead">
-              Things I build for my own interest — experiments, worlds and tools made because I wanted
-              them to exist.
+              Systems built for myself, my community, the places that shaped me and clients — with the problem,
+              the build and the outcome written down.
             </p>
           </header>
-          <ol id="personal-list" class="catalogue"></ol>
+
+          <div id="work-featured" class="work-featured"></div>
+
+          <div class="work-index-head reveal">
+            <h3 class="work-index-title">All projects</h3>
+            <div id="work-filters" class="filters" role="group" aria-label="Filter projects by category"></div>
+          </div>
+
+          <ol id="work-index" class="work-index"></ol>
+          <p id="work-empty" class="work-empty" hidden>No projects in this category yet.</p>
         </div>
       </section>
 
-      <section id="club" class="section section--tint" data-section>
+      <section id="skills" class="section" data-section>
         <div class="inner">
           <header class="section-head reveal">
-            <span class="kicker">Built for the people around me</span>
-            <h2 class="section-title">Club / Social</h2>
-            <p class="section-lead">Work made for my club and my community — building things that help others.</p>
-          </header>
-          <ol id="club-list" class="catalogue"></ol>
-        </div>
-      </section>
-
-      <section id="charity" class="section" data-section>
-        <div class="inner">
-          <header class="section-head reveal">
-            <span class="kicker">Built to give back</span>
-            <h2 class="section-title">Charity</h2>
+            <span class="kicker">What I build with</span>
+            <h2 class="section-title">Skills</h2>
             <p class="section-lead">
-              The work I do for free, for the places that shaped me — starting with my old high school.
+              Every line points at something I have actually shipped — not a checklist of things I have read about.
             </p>
           </header>
-          <ol id="charity-list" class="catalogue"></ol>
-        </div>
-      </section>
-
-      <section id="works" class="section section--tint" data-section>
-        <div class="inner">
-          <header class="section-head reveal">
-            <span class="kicker">Built for others</span>
-            <h2 class="section-title">Works</h2>
-            <p class="section-lead">Client and paid builds — where the deadline is real and the polish matters.</p>
-          </header>
-          <ol id="works-list" class="catalogue"></ol>
-        </div>
-      </section>
-
-      <section id="quotes" class="section" data-section>
-        <div class="inner">
-          <header class="section-head reveal">
-            <span class="kicker">Lines I keep</span>
-            <h2 class="section-title">Quotes</h2>
-            <p class="section-lead">Things I learned over the years, written down before I forget them.</p>
-          </header>
-          <ol id="quotes-list" class="catalogue catalogue--notes"></ol>
+          <div id="skills-grid" class="skills-grid"></div>
+          <p class="skills-foot reveal">
+            Currently going deeper into <em>agentic systems</em> and <em>applied AI</em> — the same threads that
+            run through Elpis and Athena.
+          </p>
         </div>
       </section>
 
@@ -153,11 +152,28 @@
             <span class="kicker">The short version</span>
             <h2 class="section-title">About</h2>
             <p class="section-lead">
-              Who I am, what I do, where I study and where I work — the things people actually want to
-              know.
+              Who I am, what I do, where I study and what I am trying to become — the things people actually want
+              to know.
             </p>
           </header>
+
           <ol id="about-list" class="catalogue catalogue--callouts"></ol>
+
+          <div class="timeline-block reveal">
+            <h3 class="timeline-title">The path so far</h3>
+            <ol id="timeline" class="timeline"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="notes" class="section" data-section>
+        <div class="inner">
+          <header class="section-head reveal">
+            <span class="kicker">Lines I keep</span>
+            <h2 class="section-title">Notes</h2>
+            <p class="section-lead">Things I learned over the years, written down before I forget them.</p>
+          </header>
+          <ol id="quotes-list" class="catalogue catalogue--notes"></ol>
         </div>
       </section>
 
@@ -166,6 +182,7 @@
           <span class="kicker reveal">The world ahead</span>
           <h2 class="section-title contact-title reveal">The Gate</h2>
           <p class="contact-line reveal">the next chapter — a better future, better people, a better place</p>
+          <p class="contact-note reveal">For work, collaboration, or a conversation about something you are building.</p>
           <a class="contact-mail reveal" id="contact-mail" href="mailto:contacts@elysiaa.com">contacts@elysiaa.com</a>
           <div id="socials-end" class="socials socials--end"></div>
           <div class="signoff" aria-hidden="true">Elysiaa</div>
@@ -176,6 +193,27 @@
         <span>built with three.js · wanderer &amp; fragments from the concept sheet · inspired by hope</span>
       </footer>
     </main>
+
+    <div id="project-drawer" class="drawer" hidden>
+      <div class="drawer-backdrop" data-drawer-close aria-hidden="true"></div>
+      <aside
+        class="drawer-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+        tabindex="-1"
+      >
+        <div class="drawer-top">
+          <span class="drawer-top-label">Project</span>
+          <button id="drawer-close" class="drawer-close" type="button" data-drawer-close aria-label="Close project">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+        <div id="drawer-body" class="drawer-scroll"></div>
+      </aside>
+    </div>
 
     <div id="loader" class="loader">
       <div class="loader-brand">Elysiaa</div>

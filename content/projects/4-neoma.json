@@ -1,0 +1,40 @@
+{
+  "title": "Neoma",
+  "slug": "neoma",
+  "category": "personal",
+  "kind": "project",
+  "hook": "A study management system for group work, notes and Google Calendar — connected to Elpis through MCP.",
+  "text": "Neoma is my personal study management system. It handles group assignment management and notes management, syncs with Google Calendar, and connects to Elpis through MCP so the assistant can work with the same study data.",
+  "role": "Solo developer",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "Full-stack",
+    "MCP",
+    "Google Calendar API"
+  ],
+  "highlights": [
+    "Group assignment management built around how students coordinate.",
+    "Notes management in the same place as coursework.",
+    "Google Calendar sync for deadlines.",
+    "Connected to Elpis through MCP."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "Group assignments, notes and deadlines lived in different places. Keeping track meant maintaining the system instead of doing the work.",
+    "approach": "I built one system for group assignments and notes, added Google Calendar sync for deadlines, then exposed it to Elpis through MCP.",
+    "outcome": "Neoma is live at neoma.elysiaa.com and is the study system I use myself.",
+    "learned": "Personal tools are the best test bed for integration ideas. If a workflow is annoying enough to fix for myself, it is usually worth fixing properly."
+  },
+  "link": "https://neoma.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "study",
+    "mcp",
+    "personal"
+  ],
+  "order": 4
+}

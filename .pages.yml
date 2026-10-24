@@ -6,13 +6,20 @@ media:
     extensions: [mp3, m4a, ogg]
     rename: safe
 
+  - name: projects
+    label: Project media
+    input: public/media/projects
+    output: /media/projects
+    extensions: [jpg, jpeg, png, webp, avif]
+    rename: safe
+
 content:
-  - name: personal
-    label: Personal
+  - name: projects
+    label: Projects
     type: collection
-    path: content/personal
+    path: content/projects
     format: json
-    filename: "{fields.order}-{primary}.json"
+    filename: "{fields.order}-{fields.slug}.json"
     view:
       primary: title
       sort: [order, title]
@@ -21,117 +28,247 @@ content:
         label: Title
         type: string
         required: true
+      - name: slug
+        label: Slug
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: Used in the case-study link, e.g. #project/elpis-ai
+      - name: category
+        label: Category
+        type: select
+        required: true
+        options:
+          values:
+            - name: personal
+              label: Personal
+            - name: club
+              label: Club / Social
+            - name: charity
+              label: Charity
+            - name: client
+              label: Client work
+      - name: kind
+        label: Kind
+        type: select
+        required: true
+        options:
+          values:
+            - name: project
+              label: Single project
+            - name: ecosystem
+              label: Ecosystem (multiple systems)
+        description: Use "Ecosystem" when the project contains several systems.
+      - name: hook
+        label: One-line hook
+        type: string
+        required: true
+        description: Shown on the featured card. One sentence, under ~100 characters.
       - name: text
         label: Description
         type: text
         required: true
+      - name: role
+        label: Your role
+        type: string
+        description: e.g. Solo developer, System developer
+      - name: period
+        label: Period
+        type: string
+        description: Optional — e.g. 2025, or 2024–2025.
+      - name: status
+        label: Status
+        type: select
+        options:
+          values:
+            - name: live
+              label: Live
+            - name: in-progress
+              label: In progress
+            - name: past
+              label: Past
+            - name: archived
+              label: Archived
+      - name: featured
+        label: Featured
+        type: boolean
+        description: Featured projects appear as large cards at the top of Work.
+      - name: stack
+        label: Stack
+        type: string
+        list: true
+        description: Technologies and disciplines, one per item.
+      - name: highlights
+        label: Highlights
+        type: string
+        list: true
+        description: Three to four short, concrete outcomes.
+      - name: systems
+        label: Systems
+        type: object
+        list:
+          collapsible:
+            summary: "{name}"
+        fields:
+          - name: name
+            label: System name
+            type: string
+            required: true
+          - name: summary
+            label: Summary
+            type: text
+          - name: status
+            label: Status
+            type: select
+            options:
+              values:
+                - name: live
+                  label: Live
+                - name: in-progress
+                  label: In progress
+                - name: past
+                  label: Past
+                - name: archived
+                  label: Archived
+          - name: stack
+            label: Stack
+            type: string
+            list: true
+          - name: link
+            label: Link
+            type: string
+            pattern: "^https?://"
+          - name: image
+            label: Image
+            type: image
+      - name: cover
+        label: Cover image
+        type: image
+        description: 16:10 works best. Leave empty for the typographic fallback.
+      - name: gallery
+        label: Gallery
+        type: image
+        list: true
+      - name: caseStudy
+        label: Case study
+        type: object
+        fields:
+          - name: problem
+            label: Problem
+            type: text
+          - name: approach
+            label: Approach
+            type: text
+          - name: outcome
+            label: Outcome
+            type: text
+          - name: learned
+            label: What I learned
+            type: text
+      - name: link
+        label: Live link
+        type: string
+        pattern: "^https?://"
+        description: Optional — the live site.
+      - name: repo
+        label: Code link
+        type: string
+        pattern: "^https?://"
+        description: Optional — a public repository.
       - name: tags
         label: Tags
         type: string
         list: true
-      - name: link
-        label: Link
-        type: string
-        pattern: "^https?://"
-        description: Optional — full URL, e.g. https://athena.motionukict.com
       - name: order
         label: Order
         type: number
         required: true
 
-  - name: club
-    label: Club / Social
+  - name: skills
+    label: Skills
     type: collection
-    path: content/club
+    path: content/skills
     format: json
     filename: "{fields.order}-{primary}.json"
     view:
-      primary: title
-      sort: [order, title]
+      primary: group
+      sort: [order, group]
     fields:
-      - name: title
-        label: Title
+      - name: group
+        label: Group
         type: string
         required: true
-      - name: text
-        label: Description
-        type: text
-        required: true
-      - name: tags
-        label: Tags
+      - name: note
+        label: Note
         type: string
-        list: true
-      - name: link
-        label: Link
-        type: string
-        pattern: "^https?://"
-        description: Optional — full URL, e.g. https://athena.motionukict.com
+        description: Optional one-liner shown under the group heading.
+      - name: items
+        label: Skills
+        type: object
+        list:
+          collapsible:
+            summary: "{name}"
+        fields:
+          - name: name
+            label: Skill
+            type: string
+            required: true
+          - name: proof
+            label: Proof
+            type: string
+            description: Where this was used, e.g. "Elpis AI · Neoma".
+          - name: href
+            label: Proof link
+            type: string
+            description: Optional — e.g. #project/elpis-ai or a full URL.
       - name: order
         label: Order
         type: number
         required: true
 
-  - name: charity
-    label: Charity
+  - name: experience
+    label: Experience
     type: collection
-    path: content/charity
+    path: content/experience
     format: json
     filename: "{fields.order}-{primary}.json"
     view:
-      primary: title
-      sort: [order, title]
+      primary: org
+      sort: [order, org]
     fields:
-      - name: title
-        label: Title
+      - name: role
+        label: Role / study
         type: string
         required: true
-      - name: text
-        label: Description
+      - name: org
+        label: Organisation
+        type: string
+        required: true
+      - name: period
+        label: Period / result
+        type: string
+        description: Optional — e.g. 2025, Present, CGPA 3.92.
+      - name: kind
+        label: Kind
+        type: select
+        options:
+          values:
+            - name: work
+              label: Work
+            - name: study
+              label: Study
+            - name: charity
+              label: Charity
+      - name: detail
+        label: Detail
         type: text
-        required: true
-      - name: tags
-        label: Tags
-        type: string
-        list: true
-      - name: order
-        label: Order
-        type: number
-        required: true
-
-  - name: works
-    label: Works
-    type: collection
-    path: content/works
-    format: json
-    filename: "{fields.order}-{primary}.json"
-    view:
-      primary: title
-      sort: [order, title]
-    fields:
-      - name: title
-        label: Title
-        type: string
-        required: true
-      - name: text
-        label: Description
-        type: text
-        required: true
-      - name: tags
-        label: Tags
-        type: string
-        list: true
-      - name: link
-        label: Link
-        type: string
-        pattern: "^https?://"
-        description: Optional — the company or site URL, e.g. https://www.deta.com.my/
       - name: order
         label: Order
         type: number
         required: true
 
   - name: quotes
-    label: Quotes
+    label: Notes / Quotes
     type: collection
     path: content/quotes
     format: json

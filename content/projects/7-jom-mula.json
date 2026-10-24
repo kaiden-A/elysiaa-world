@@ -1,0 +1,38 @@
+{
+  "title": "Jom Mula",
+  "slug": "jom-mula",
+  "category": "personal",
+  "kind": "project",
+  "hook": "Request-driven tutorials on building real applications, written for people who learn by making.",
+  "text": "I love to teach, but the best feeling in teaching is when the person is willing to learn. On Jom Mula I write guides on how to build specific applications, based on requests from other people.",
+  "role": "Author",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "CMS",
+    "Technical writing"
+  ],
+  "highlights": [
+    "Tutorials written around real requests from readers.",
+    "CMS-backed, so new guides ship without touching code.",
+    "Teaching as a way of giving knowledge back."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "People kept asking how to build the same kinds of applications, and answering one person at a time did not scale.",
+    "approach": "I turned the requests into written guides: pick a specific application, build it step by step, and publish it where anyone can follow along.",
+    "outcome": "Jom Mula is live at jom.elysiaa.com as a growing library of build guides.",
+    "learned": "Writing a tutorial exposes every gap in your own understanding. Teaching is the cheapest code review you can give yourself."
+  },
+  "link": "https://jom.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "teaching",
+    "writing",
+    "cms"
+  ],
+  "order": 7
+}

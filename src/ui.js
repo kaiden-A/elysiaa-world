@@ -1,13 +1,16 @@
 import {
   NAV,
-  PERSONAL,
-  CLUB,
-  CHARITY,
-  WORKS,
+  PROJECTS,
+  FEATURED,
+  SKILLS,
+  EXPERIENCE,
   QUOTES,
   ABOUT,
   SOCIALS,
   CONTACT_MAIL,
+  CATEGORIES,
+  CATEGORY_LABELS,
+  STATUS_LABELS,
 } from './content.js';
 import { daynight } from './core/daynight.js';
 import { initAudio } from './audio.js';
@@ -20,9 +23,74 @@ const ICONS = {
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="1"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
 };
 
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+const BASE_TITLE = document.title;
+const HTML_ESCAPES = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
 
 const $ = (id) => document.getElementById(id);
+const projectBySlug = new Map(PROJECTS.map((project) => [project.slug, project]));
+const PAGE_REGIONS = ['header.chrome', '#content', '.footer']
+  .map((selector) => document.querySelector(selector))
+  .filter(Boolean);
+
+/* ---------- helpers ---------- */
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}
+
+function safeHref(value) {
+  if (!value) return '';
+  if (String(value).startsWith('#')) return value;
+  try {
+    const url = new URL(value, window.location.href);
+    return ['http:', 'https:', 'mailto:'].includes(url.protocol) ? value : '';
+  } catch {
+    return '';
+  }
+}
+
+function externalAttrs(href) {
+  return /^https?:/i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : '';
+}
+
+function paragraphs(text) {
+  return String(text || '')
+    .split(/\n{2,}/)
+    .map((block) => `<p>${esc(block).replace(/\n/g, '<br />')}</p>`)
+    .join('');
+}
+
+function statusMarkup(status) {
+  if (!status) return '';
+  const label = STATUS_LABELS[status] || status;
+  return `<span class="status"><span class="status-dot status-dot--${esc(status)}" aria-hidden="true"></span>${esc(label)}</span>`;
+}
+
+function chips(items = [], className = 'chips') {
+  if (!items || !items.length) return '';
+  return `<div class="${className}">${items.map((item) => `<span>${esc(item)}</span>`).join('')}</div>`;
+}
+
+function coverArt(project, index) {
+  const category = esc(project.category || 'personal');
+  return `<span class="work-cover-art work-cover-art--${category}" aria-hidden="true">
+    <span class="work-cover-no">${ROMAN[index] || String(index + 1)}</span>
+    <span class="work-cover-label">${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}</span>
+  </span>`;
+}
+
+function coverImage(project, index, alt = '') {
+  const src = safeHref(project.cover);
+  if (!src) return coverArt(project, index);
+  return `<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" />`;
+}
 
 /* ---------- build ---------- */
 
@@ -30,22 +98,23 @@ function plate(item, index, label) {
   const el = document.createElement('li');
   el.className = 'plate';
   el.style.transitionDelay = `${(index % 3) * 0.1}s`;
+  const link = safeHref(item.link);
   el.innerHTML = `
-    <span class="plate-no">${item.kicker || label}</span>
+    <span class="plate-no">${esc(item.kicker || label)}</span>
     <div>
       ${
         item.title
           ? `<h3 class="plate-title">${
-              item.link
-                ? `<a class="plate-link" href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}<span class="plate-link-arrow" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
-                : item.title
+              link
+                ? `<a class="plate-link" href="${esc(link)}"${externalAttrs(link)}>${esc(item.title)}<span class="plate-link-arrow" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
+                : esc(item.title)
             }</h3>`
           : ''
       }
-      <p class="plate-text">${item.text}</p>
+      <div class="plate-text">${paragraphs(item.text)}</div>
       ${
-        item.tags
-          ? `<div class="plate-tags">${item.tags.map((t) => `<span>${t}</span>`).join('')}</div>`
+        item.tags && item.tags.length
+          ? `<div class="plate-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join('')}</div>`
           : ''
       }
     </div>
@@ -60,25 +129,346 @@ function fillList(id, items, labeler) {
 
 function fillSocials(id) {
   const el = $(id);
-  SOCIALS.forEach((s) => {
+  SOCIALS.forEach((social) => {
     const a = document.createElement('a');
-    a.href = s.href;
-    a.setAttribute('aria-label', s.label);
-    if (s.href.startsWith('http')) {
+    a.href = social.href;
+    a.setAttribute('aria-label', social.label);
+    if (social.href.startsWith('http')) {
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
     }
-    a.innerHTML = ICONS[s.icon];
+    a.innerHTML = ICONS[social.icon];
     el.appendChild(a);
   });
 }
 
-function buildNav() {
-  const nav = $('site-nav');
-  nav.innerHTML = NAV.map((n) => `<a class="nav-link" href="#${n.id}">${n.label}</a>`).join('');
+function featuredCard(project) {
+  const index = PROJECTS.indexOf(project);
+  const link = safeHref(project.link);
+  const repo = safeHref(project.repo);
+  const systems = project.systems && project.systems.length ? `${project.systems.length} systems` : '';
+  const meta = [project.role, systems].filter(Boolean).join(' · ');
+
+  return `
+    <article class="work-card reveal">
+      <button class="work-cover" type="button" data-open-project="${esc(project.slug)}" aria-label="Read the ${esc(project.title)} case study">
+        ${coverImage(project, index)}
+        <span class="work-cover-hint">Read case study <span aria-hidden="true">→</span></span>
+      </button>
+      <div class="work-card-body">
+        <p class="work-card-meta">
+          <span>${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
+          ${statusMarkup(project.status)}
+        </p>
+        <h3 class="work-card-title">
+          <button type="button" data-open-project="${esc(project.slug)}">${esc(project.title)}</button>
+        </h3>
+        <p class="work-card-hook">${esc(project.hook)}</p>
+        ${meta ? `<p class="work-card-role">${esc(meta)}</p>` : ''}
+        ${chips(project.stack)}
+        <div class="work-card-links">
+          <button type="button" data-open-project="${esc(project.slug)}">Case study <span aria-hidden="true">→</span></button>
+          ${
+            link
+              ? `<a href="${esc(link)}"${externalAttrs(link)}>Live <span aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
+              : ''
+          }
+          ${
+            repo
+              ? `<a href="${esc(repo)}"${externalAttrs(repo)}>Code <span aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
+              : ''
+          }
+        </div>
+      </div>
+    </article>
+  `;
 }
 
-/* ---------- nav behaviour ---------- */
+function indexRow(project) {
+  const index = PROJECTS.indexOf(project);
+  const tags = (project.stack || []).slice(0, 3).join(' · ');
+  return `
+    <li class="work-row reveal" data-category="${esc(project.category)}">
+      <button class="work-row-main" type="button" data-open-project="${esc(project.slug)}">
+        <span class="work-row-no">${String(index + 1).padStart(2, '0')}</span>
+        <span class="work-row-title">${esc(project.title)}</span>
+        <span class="work-row-hook">${esc(project.hook)}</span>
+        <span class="work-row-tags">${esc(tags)}</span>
+        <span class="work-row-arrow" aria-hidden="true">→</span>
+      </button>
+    </li>
+  `;
+}
+
+function renderWork() {
+  $('work-featured').innerHTML = FEATURED.map(featuredCard).join('');
+  $('work-index').innerHTML = PROJECTS.map(indexRow).join('');
+
+  const filters = $('work-filters');
+  filters.innerHTML = CATEGORIES.map(
+    (category, index) =>
+      `<button class="filter" type="button" data-filter="${esc(category.id)}" aria-pressed="${index === 0}">${esc(category.label)}</button>`
+  ).join('');
+
+  filters.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-filter]');
+    if (!button) return;
+    const filter = button.dataset.filter;
+    filters.querySelectorAll('[data-filter]').forEach((item) => {
+      item.setAttribute('aria-pressed', String(item === button));
+    });
+    let visible = 0;
+    document.querySelectorAll('#work-index .work-row').forEach((row) => {
+      const show = filter === 'all' || row.dataset.category === filter;
+      row.hidden = !show;
+      if (show) visible += 1;
+    });
+    $('work-empty').hidden = visible > 0;
+  });
+}
+
+function renderSkills() {
+  $('skills-grid').innerHTML = SKILLS.map((group, groupIndex) => {
+    const items = (group.items || [])
+      .map((item) => {
+        const href = safeHref(item.href);
+        const proof = esc(item.proof);
+        return `<li class="skill-item">
+          <span class="skill-name">${esc(item.name)}</span>
+          ${
+            href
+              ? `<a class="skill-proof" href="${esc(href)}"${externalAttrs(href)}>${proof}${/^https?:/.test(href) ? '<span class="sr-only"> (opens in new tab)</span>' : ''}</a>`
+              : `<span class="skill-proof">${proof}</span>`
+          }
+        </li>`;
+      })
+      .join('');
+
+    return `<section class="skill-group reveal" aria-labelledby="skill-group-${groupIndex}">
+      <h3 id="skill-group-${groupIndex}" class="skill-group-title">${esc(group.group)}</h3>
+      ${group.note ? `<p class="skill-group-note">${esc(group.note)}</p>` : ''}
+      <ul class="skill-list">${items}</ul>
+    </section>`;
+  }).join('');
+}
+
+function renderTimeline() {
+  $('timeline').innerHTML = EXPERIENCE.map(
+    (item) => `<li class="timeline-item reveal">
+      <div class="timeline-head">
+        ${item.period ? `<span class="timeline-period">${esc(item.period)}</span>` : ''}
+        ${item.kind ? `<span class="timeline-kind timeline-kind--${esc(item.kind)}">${esc(item.kind)}</span>` : ''}
+      </div>
+      <h4 class="timeline-role">${esc(item.role)}</h4>
+      <p class="timeline-org">${esc(item.org)}</p>
+      ${item.detail ? `<p class="timeline-detail">${esc(item.detail)}</p>` : ''}
+    </li>`
+  ).join('');
+}
+
+/* ---------- drawer ---------- */
+
+let drawerOpen = false;
+let lastFocused = null;
+
+function systemCard(system) {
+  const link = safeHref(system.link);
+  return `<article class="system">
+    ${
+      system.image
+        ? `<div class="system-image"><img src="${esc(safeHref(system.image))}" alt="" loading="lazy" decoding="async" /></div>`
+        : ''
+    }
+    <div class="system-head">
+      <h4 class="system-title">${esc(system.name)}</h4>
+      ${statusMarkup(system.status)}
+    </div>
+    ${system.summary ? `<p class="system-summary">${esc(system.summary)}</p>` : ''}
+    ${chips(system.stack)}
+    ${link ? `<a class="system-link" href="${esc(link)}"${externalAttrs(link)}>Open <span aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>` : ''}
+  </article>`;
+}
+
+function drawerMarkup(project) {
+  const index = PROJECTS.indexOf(project);
+  const next = PROJECTS[(index + 1) % PROJECTS.length];
+  const link = safeHref(project.link);
+  const repo = safeHref(project.repo);
+  const cover = safeHref(project.cover);
+  const caseStudy = project.caseStudy || {};
+  const systems = project.systems || [];
+  const meta = [
+    ['Role', project.role],
+    ['Period', project.period],
+    ['Status', STATUS_LABELS[project.status] || project.status],
+  ].filter(([, value]) => value);
+
+  return `
+    <header class="drawer-head">
+      <p class="kicker">${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}${
+        project.kind === 'ecosystem' ? ' · Ecosystem' : ''
+      }</p>
+      <h2 id="drawer-title" class="drawer-title">${esc(project.title)}</h2>
+      ${project.hook ? `<p class="drawer-hook">${esc(project.hook)}</p>` : ''}
+      ${
+        meta.length
+          ? `<dl class="drawer-meta">${meta
+              .map(([key, value]) => `<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`)
+              .join('')}</dl>`
+          : ''
+      }
+      ${chips(project.stack, 'chips chips--drawer')}
+      ${
+        link || repo
+          ? `<div class="drawer-actions">
+              ${link ? `<a class="btn btn--solid" href="${esc(link)}"${externalAttrs(link)}>Visit live <span aria-hidden="true">↗</span></a>` : ''}
+              ${repo ? `<a class="btn" href="${esc(repo)}"${externalAttrs(repo)}>View code <span aria-hidden="true">↗</span></a>` : ''}
+            </div>`
+          : ''
+      }
+    </header>
+    ${cover ? `<figure class="drawer-cover"><img src="${esc(cover)}" alt="${esc(project.title)} preview" loading="lazy" decoding="async" /></figure>` : ''}
+    ${project.text ? `<section class="drawer-section"><h3>Overview</h3>${paragraphs(project.text)}</section>` : ''}
+    ${caseStudy.problem ? `<section class="drawer-section"><h3>The problem</h3>${paragraphs(caseStudy.problem)}</section>` : ''}
+    ${caseStudy.approach ? `<section class="drawer-section"><h3>The approach</h3>${paragraphs(caseStudy.approach)}</section>` : ''}
+    ${
+      systems.length
+        ? `<section class="drawer-section"><h3>Inside the ecosystem</h3><div class="systems-grid">${systems
+            .map(systemCard)
+            .join('')}</div></section>`
+        : ''
+    }
+    ${
+      project.highlights && project.highlights.length
+        ? `<section class="drawer-section"><h3>What stands out</h3><ul class="drawer-highlights">${project.highlights
+            .map((highlight) => `<li>${esc(highlight)}</li>`)
+            .join('')}</ul></section>`
+        : ''
+    }
+    ${caseStudy.outcome ? `<section class="drawer-section"><h3>The outcome</h3>${paragraphs(caseStudy.outcome)}</section>` : ''}
+    ${caseStudy.learned ? `<section class="drawer-section"><h3>What I learned</h3>${paragraphs(caseStudy.learned)}</section>` : ''}
+    <footer class="drawer-footer">
+      <p class="drawer-footer-label">Next project</p>
+      <button class="drawer-next" type="button" data-open-project="${esc(next.slug)}">
+        <span>${esc(next.title)}</span>
+        <span aria-hidden="true">→</span>
+      </button>
+    </footer>
+  `;
+}
+
+function openProject(slug, { updateHash = true } = {}) {
+  const project = projectBySlug.get(slug);
+  if (!project) return;
+
+  if (updateHash && window.location.hash !== `#project/${slug}`) {
+    window.location.hash = `#project/${slug}`;
+    return;
+  }
+
+  const drawer = $('project-drawer');
+  const body = $('drawer-body');
+  const panel = drawer.querySelector('.drawer-panel');
+
+  if (!drawerOpen) {
+    lastFocused = document.activeElement;
+    drawer.hidden = false;
+    document.documentElement.classList.add('drawer-open');
+    PAGE_REGIONS.forEach((region) => {
+      region.inert = true;
+    });
+    drawerOpen = true;
+  }
+
+  body.innerHTML = drawerMarkup(project);
+  body.scrollTop = 0;
+  panel.focus({ preventScroll: true });
+  document.title = `${project.title} — ${BASE_TITLE}`;
+}
+
+function closeDrawer({ updateHistory = true } = {}) {
+  if (!drawerOpen) return;
+  drawerOpen = false;
+  $('project-drawer').hidden = true;
+  $('drawer-body').innerHTML = '';
+  document.documentElement.classList.remove('drawer-open');
+  PAGE_REGIONS.forEach((region) => {
+    region.inert = false;
+  });
+  document.title = BASE_TITLE;
+
+  if (updateHistory && window.location.hash.startsWith('#project/')) {
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+  }
+
+  if (lastFocused && typeof lastFocused.focus === 'function') {
+    lastFocused.focus({ preventScroll: true });
+  }
+  lastFocused = null;
+}
+
+function syncDrawerFromHash() {
+  const match = window.location.hash.match(/^#project\/([a-z0-9-]+)$/);
+  if (match) openProject(match[1], { updateHash: false });
+  else closeDrawer({ updateHistory: false });
+}
+
+function initDrawer() {
+  const drawer = $('project-drawer');
+
+  document.addEventListener('click', (event) => {
+    const opener = event.target.closest('[data-open-project]');
+    if (opener) {
+      event.preventDefault();
+      openProject(opener.dataset.openProject);
+      return;
+    }
+    if (event.target.closest('[data-drawer-close]')) {
+      event.preventDefault();
+      closeDrawer();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (!drawerOpen) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeDrawer();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const panel = drawer.querySelector('.drawer-panel');
+    const focusable = [...drawer.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(
+      (element) => element.offsetParent !== null
+    );
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  window.addEventListener('hashchange', syncDrawerFromHash);
+  syncDrawerFromHash();
+}
+
+/* ---------- nav ---------- */
+
+function buildNav() {
+  const nav = $('site-nav');
+  nav.innerHTML = NAV.map((item) => `<a class="nav-link" href="#${item.id}">${esc(item.label)}</a>`).join('');
+}
 
 function initNav() {
   const nav = $('site-nav');
@@ -89,8 +479,8 @@ function initNav() {
     toggle.setAttribute('aria-expanded', String(open));
   });
 
-  nav.addEventListener('click', (e) => {
-    if (e.target.closest('a')) {
+  nav.addEventListener('click', (event) => {
+    if (event.target.closest('a')) {
       nav.classList.remove('open');
       toggle.setAttribute('aria-expanded', 'false');
     }
@@ -118,35 +508,39 @@ function initSpy() {
     { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
   );
 
-  sections.forEach((s) => spy.observe(s));
+  sections.forEach((section) => spy.observe(section));
 }
 
 /* ---------- reveals ---------- */
 
 const io = new IntersectionObserver(
   (entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
       }
     }
   },
   { threshold: 0.15 }
 );
 
+function observeReveals() {
+  document.querySelectorAll('.plate, .reveal').forEach((element) => io.observe(element));
+}
+
 /* ---------- theme ---------- */
 
 function initTheme() {
-  const btn = $('theme-toggle');
-  if (!btn) return;
+  const button = $('theme-toggle');
+  if (!button) return;
 
-  btn.addEventListener('click', () => daynight.toggle());
+  button.addEventListener('click', () => daynight.toggle());
 
   daynight.subscribe((mode) => {
     const night = mode === 'night';
-    btn.setAttribute('aria-pressed', String(night));
-    btn.setAttribute('aria-label', night ? 'Switch to sunset theme' : 'Switch to night theme');
+    button.setAttribute('aria-pressed', String(night));
+    button.setAttribute('aria-label', night ? 'Switch to sunset theme' : 'Switch to night theme');
   });
 }
 
@@ -154,12 +548,11 @@ function initTheme() {
 
 export function initUI() {
   buildNav();
-  fillList('personal-list', PERSONAL, (i) => `Plate ${ROMAN[i]}`);
-  fillList('club-list', CLUB, (i) => `Plate ${ROMAN[i]}`);
-  fillList('charity-list', CHARITY, (i) => `Plate ${ROMAN[i]}`);
-  fillList('works-list', WORKS, (i) => `Plate ${ROMAN[i]}`);
-  fillList('quotes-list', QUOTES, (_i, item) => item.source);
+  renderWork();
+  renderSkills();
   fillList('about-list', ABOUT, (i) => `Plate ${ROMAN[i]}`);
+  renderTimeline();
+  fillList('quotes-list', QUOTES, (_i, item) => item.source);
   fillSocials('socials');
   fillSocials('socials-end');
   $('contact-mail').href = `mailto:${CONTACT_MAIL}`;
@@ -169,12 +562,12 @@ export function initUI() {
   initSpy();
   initTheme();
   initAudio();
-
-  document.querySelectorAll('.plate, .reveal').forEach((el) => io.observe(el));
+  initDrawer();
+  observeReveals();
 }
 
-export function setLoadProgress(p) {
-  $('loader-fill').style.width = `${Math.round(p * 100)}%`;
+export function setLoadProgress(progress) {
+  $('loader-fill').style.width = `${Math.round(progress * 100)}%`;
 }
 
 export function hideLoader() {

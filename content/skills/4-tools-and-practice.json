@@ -1,0 +1,42 @@
+{
+  "group": "Tools & practice",
+  "note": "The part that keeps shipping.",
+  "order": 4,
+  "items": [
+    {
+      "name": "JavaScript",
+      "proof": "This world",
+      "href": "#project/elysiaa"
+    },
+    {
+      "name": "HTML / CSS",
+      "proof": "This world",
+      "href": "#project/elysiaa"
+    },
+    {
+      "name": "Git & GitHub",
+      "proof": "github.com/kaiden-A",
+      "href": "https://github.com/kaiden-A"
+    },
+    {
+      "name": "Vite",
+      "proof": "This world",
+      "href": "#project/elysiaa"
+    },
+    {
+      "name": "Pages CMS",
+      "proof": "This world",
+      "href": "#project/elysiaa"
+    },
+    {
+      "name": "Technical writing",
+      "proof": "Jom Mula",
+      "href": "#project/jom-mula"
+    },
+    {
+      "name": "Teaching",
+      "proof": "Jom Mula",
+      "href": "#project/jom-mula"
+    }
+  ]
+}

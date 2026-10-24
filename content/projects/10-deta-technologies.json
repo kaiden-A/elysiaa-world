@@ -1,0 +1,38 @@
+{
+  "title": "Deta Technologies",
+  "slug": "deta-technologies",
+  "category": "client",
+  "kind": "project",
+  "hook": "Client work that turned me into a full-stack developer.",
+  "text": "During my time at Deta Technologies, I grew into a full-stack developer by working on meaningful projects and gaining hands-on experience in real-world software development. I learned how industry standards, development practices and professional workflows operate — and how to apply those principles to my own day-to-day work.",
+  "role": "Full-stack developer",
+  "period": "",
+  "status": "past",
+  "featured": false,
+  "stack": [
+    "Full-stack",
+    "AI"
+  ],
+  "highlights": [
+    "Worked on meaningful client projects.",
+    "Learned industry standards and professional workflows.",
+    "Applied those practices to my own projects afterwards."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "I could build things, but I had not yet worked inside the standards and workflows of a professional software team.",
+    "approach": "I joined Deta Technologies and worked on client projects end to end, learning the practices that sit around the code: review, process and delivery.",
+    "outcome": "The experience changed how I build: the same standards now apply to my personal and client work.",
+    "learned": "The gap between a working prototype and professional software is mostly discipline. Process is not bureaucracy when it protects the people using the result."
+  },
+  "link": "https://www.deta.com.my/",
+  "repo": "",
+  "tags": [
+    "client work",
+    "industry",
+    "full-stack"
+  ],
+  "order": 10
+}

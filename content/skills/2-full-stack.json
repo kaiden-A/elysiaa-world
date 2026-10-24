@@ -1,0 +1,27 @@
+{
+  "group": "Full-stack",
+  "note": "From data model to interface.",
+  "order": 2,
+  "items": [
+    {
+      "name": "Full-stack development",
+      "proof": "Solace · Neoma · Deta",
+      "href": "#project/solace"
+    },
+    {
+      "name": "Systems architecture",
+      "proof": "KTAG · MITS · Club",
+      "href": "#project/ktag"
+    },
+    {
+      "name": "API integration",
+      "proof": "Neoma · Calendar",
+      "href": "#project/neoma"
+    },
+    {
+      "name": "CMS-driven content",
+      "proof": "Jom Mula · this world",
+      "href": "#project/jom-mula"
+    }
+  ]
+}

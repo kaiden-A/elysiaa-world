@@ -1,0 +1,38 @@
+{
+  "title": "Club Ecosystems",
+  "slug": "club-ecosystems",
+  "category": "club",
+  "kind": "ecosystem",
+  "hook": "Internal tools that give club members their time back.",
+  "text": "I have built a handful of applications, not to boast about what I have made, but because I believe technology should make people's lives easier. I build to improve efficiency within the club, reduce unnecessary work, and give students more room to simply be students — while still making it easier for everyone to get the job done.",
+  "role": "Developer",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "Full-stack",
+    "Systems design"
+  ],
+  "highlights": [
+    "Several applications built for the club's day-to-day operations.",
+    "Focused on removing repetitive admin work.",
+    "Designed to leave students with more room to be students."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "Club operations depended on repeated manual work that took time away from the actual reason students joined.",
+    "approach": "I built a set of small applications around the tasks that repeated most, each one replacing a manual step rather than adding another tool to maintain.",
+    "outcome": "The tools are in use across the club, and the portfolio of systems keeps growing as new bottlenecks appear.",
+    "learned": "Internal tools are judged differently: nobody praises them, they just stop complaining. That is the point."
+  },
+  "link": "https://www.motionukict.com",
+  "repo": "",
+  "tags": [
+    "for others",
+    "efficiency",
+    "club"
+  ],
+  "order": 6
+}

@@ -1,0 +1,39 @@
+{
+  "title": "Elpis AI",
+  "slug": "elpis-ai",
+  "category": "personal",
+  "kind": "project",
+  "hook": "A fully agentic personal AI built on MCP tool calling.",
+  "text": "Elpis is my personal AI — a fully agentic assistant powered by MCP tool calling. Named after the Greek word for hope, it is a reflection of the work I have put in, the growth I have made, and the hope I have for what I can build next.",
+  "role": "Solo developer",
+  "period": "",
+  "status": "live",
+  "featured": true,
+  "stack": [
+    "MCP",
+    "Agentic AI",
+    "LLM"
+  ],
+  "highlights": [
+    "Agentic behaviour driven by MCP tool calling rather than a fixed script.",
+    "Built end-to-end as a personal system — design, tooling and integration.",
+    "Connects with Neoma through MCP, so study data is reachable conversationally."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "I wanted an assistant that could actually do things — reach tools, hold context and act on my behalf — not just answer questions in a chat box.",
+    "approach": "Elpis is built around MCP tool calling. Each capability is exposed as a tool the model can choose and chain, which keeps behaviour agentic instead of hard-coded into prompts.",
+    "outcome": "Elpis runs as my personal AI layer. It can be extended with new tools without rebuilding the assistant, and it connects to Neoma so study data becomes usable through conversation.",
+    "learned": "The hard part of agentic systems is not the model — it is the boundary between the model and the tools. Clear tool contracts and small, purposeful tools matter more than elaborate prompts."
+  },
+  "link": "https://elpis-dev.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "agentic AI",
+    "llm",
+    "personal"
+  ],
+  "order": 1
+}

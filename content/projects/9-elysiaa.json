@@ -1,0 +1,41 @@
+{
+  "title": "Elysiaa",
+  "slug": "elysiaa",
+  "category": "personal",
+  "kind": "project",
+  "hook": "This site: a hand-built WebGL world with custom shaders, a day/night cycle and a wanderer.",
+  "text": "This world. Built for no one but curiosity — a place to test what shaders, pixels and a stubborn idea can become.",
+  "role": "Designer & developer",
+  "period": "",
+  "status": "live",
+  "featured": false,
+  "stack": [
+    "Three.js",
+    "GLSL",
+    "WebGL",
+    "Vite"
+  ],
+  "highlights": [
+    "Three.js scene with custom GLSL atmosphere and post-processing.",
+    "Hand-illustrated parallax plates and a layered wanderer.",
+    "A day/night cycle tied to the site theme.",
+    "Content editable through Pages CMS."
+  ],
+  "systems": [],
+  "cover": "",
+  "gallery": [],
+  "caseStudy": {
+    "problem": "A portfolio should feel like the work it shows. A template would have contradicted everything this site is meant to prove.",
+    "approach": "I built the world from scratch: a Three.js scene, custom shaders, layered art plates and a day/night system, all behind a plain HTML content layer so the writing stays editable.",
+    "outcome": "The site you are reading is the project. It runs in the browser with no video and no pre-rendered background.",
+    "learned": "Atmosphere is mostly restraint. The expensive-looking moments came from timing, light and negative space, not from more geometry."
+  },
+  "link": "https://www.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "three.js",
+    "glsl",
+    "personal"
+  ],
+  "order": 9
+}
