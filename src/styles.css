@@ -151,6 +151,28 @@ body[data-phase='night'] #vignette {
   pointer-events: none;
 }
 
+.chrome::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6.5rem;
+  z-index: -1;
+  background: transparent;
+  transition: background 0.4s var(--ease), backdrop-filter 0.4s var(--ease);
+  pointer-events: none;
+}
+
+.chrome.is-scrolled::before {
+  background: rgba(6, 10, 14, 0.84);
+  border-bottom: 1px solid rgba(242, 232, 213, 0.09);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body[data-phase='night'] .chrome.is-scrolled::before {
+  background: rgba(3, 7, 14, 0.88);
+}
+
 .chrome > * {
   pointer-events: auto;
 }
@@ -1526,7 +1548,7 @@ body[data-phase='night'] .section--tint::before {
   display: grid;
   grid-template-columns: 3.2rem minmax(0, 1.1fr) minmax(0, 1.8fr) auto 1.4rem;
   gap: 1.4rem;
-  align-items: center;
+  align-items: baseline;
   width: 100%;
   padding: 1.15rem 0;
   border: 0;
@@ -2556,6 +2578,10 @@ body[data-phase='night'] .no-webgl {
   .nav.open {
     animation: none;
   }
+
+  .chrome::before {
+    transition: none;
+  }
   .brand,
   .compass,
   .theme-toggle,
@@ -2641,6 +2667,10 @@ body[data-phase='night'] .no-webgl {
 }
 
 @media (max-width: 760px) {
+  .chrome::before {
+    height: 5.25rem;
+  }
+
   .hero {
     grid-template-rows: auto auto auto;
     align-content: center;
@@ -2716,6 +2746,7 @@ body[data-phase='night'] .no-webgl {
     grid-template-columns: 2rem minmax(0, 1fr) 1.4rem;
     grid-template-rows: auto auto;
     gap: 0.15rem 0.5rem;
+    align-items: start;
     padding: 1rem 0;
   }
 
