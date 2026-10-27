@@ -767,18 +767,6 @@ function initBackToTop() {
   });
 }
 
-function initChrome() {
-  const chrome = document.querySelector('.chrome');
-  if (!chrome) return;
-
-  const update = () => {
-    chrome.classList.toggle('is-scrolled', window.scrollY > 24);
-  };
-
-  update();
-  window.addEventListener('scroll', update, { passive: true });
-}
-
 async function copyText(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     await navigator.clipboard.writeText(text);
@@ -847,7 +835,6 @@ export function initUI() {
   initDrawer();
   initBackToTop();
   initHero();
-  initChrome();
   initCopyMail();
   initNoWebglDismiss();
   observeReveals();

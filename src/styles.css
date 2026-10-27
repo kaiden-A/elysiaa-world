@@ -154,28 +154,6 @@ body[data-phase='night'] #vignette {
   pointer-events: none;
 }
 
-.chrome::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 6.5rem;
-  z-index: -1;
-  background: transparent;
-  transition: background 0.4s var(--ease), backdrop-filter 0.4s var(--ease);
-  pointer-events: none;
-}
-
-.chrome.is-scrolled::before {
-  background: rgba(6, 10, 14, 0.84);
-  border-bottom: 1px solid rgba(242, 232, 213, 0.09);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-body[data-phase='night'] .chrome.is-scrolled::before {
-  background: rgba(3, 7, 14, 0.88);
-}
-
 .chrome > * {
   pointer-events: auto;
 }
@@ -2712,9 +2690,6 @@ body[data-phase='night'] .no-webgl {
     animation: none;
   }
 
-  .chrome::before {
-    transition: none;
-  }
   .brand,
   .compass,
   .theme-toggle,
@@ -2842,10 +2817,6 @@ body[data-phase='night'] .no-webgl {
 }
 
 @media (max-width: 760px) {
-  .chrome::before {
-    height: 5.25rem;
-  }
-
   .hero-stage {
     grid-template-rows: auto auto auto;
     align-content: center;
