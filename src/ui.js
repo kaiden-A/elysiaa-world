@@ -1,5 +1,4 @@
 import {
-  NAV,
   PROJECTS,
   FEATURED,
   MORE,
@@ -7,33 +6,33 @@ import {
   EXPERIENCE,
   QUOTES,
   ABOUT,
-  SOCIALS,
   CONTACT_MAIL,
   CATEGORIES,
   CATEGORY_LABELS,
   STATUS_LABELS,
 } from './content.js';
+import {
+  esc,
+  safeHref,
+  externalAttrs,
+  paragraphs,
+  statusMarkup,
+  chips,
+  featuredCard,
+  indexRow,
+  skillsMarkup,
+  timelineMarkup,
+  aboutLeadMarkup,
+  aboutListMarkup,
+  notesMarkup,
+  navMarkup,
+  socialsMarkup,
+  workFiltersMarkup,
+} from './markup.js';
 import { daynight } from './core/daynight.js';
 import { initAudio } from './audio.js';
 
-const ICONS = {
-  github:
-    '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
-  linkedin:
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.24 8.31h4.52V23H.24V8.31zM8.34 8.31h4.33v2h.06c.6-1.14 2.07-2.34 4.26-2.34 4.56 0 5.4 3 5.4 6.9V23h-4.52v-7.1c0-1.7-.03-3.88-2.36-3.88-2.37 0-2.73 1.85-2.73 3.76V23H8.34V8.31z"/></svg>',
-  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="1"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>',
-};
-
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 const BASE_TITLE = document.title;
-const HTML_ESCAPES = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-};
-
 const $ = (id) => document.getElementById(id);
 const projectBySlug = new Map(PROJECTS.map((project) => [project.slug, project]));
 const PAGE_REGIONS = ['header.chrome', '#content']
@@ -45,169 +44,7 @@ const NAV_BACKGROUND_REGIONS = ['#content', '.brand', '.chrome-end']
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
 const scrollBehavior = () => (REDUCED_MOTION.matches ? 'auto' : 'smooth');
 
-/* ---------- helpers ---------- */
-
-function esc(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
-}
-
-function safeHref(value) {
-  if (!value) return '';
-  if (String(value).startsWith('#')) return value;
-  try {
-    const url = new URL(value, window.location.href);
-    return ['http:', 'https:', 'mailto:'].includes(url.protocol) ? value : '';
-  } catch {
-    return '';
-  }
-}
-
-function externalAttrs(href) {
-  return /^https?:/i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : '';
-}
-
-function paragraphs(text) {
-  return String(text || '')
-    .split(/\n{2,}/)
-    .map((block) => `<p>${esc(block).replace(/\n/g, '<br />')}</p>`)
-    .join('');
-}
-
-function statusMarkup(status) {
-  if (!status) return '';
-  const label = STATUS_LABELS[status] || status;
-  return `<span class="status"><span class="status-dot status-dot--${esc(status)}" aria-hidden="true"></span>${esc(label)}</span>`;
-}
-
-function chips(items = [], className = 'chips') {
-  if (!items || !items.length) return '';
-  return `<div class="${className}">${items.map((item) => `<span>${esc(item)}</span>`).join('')}</div>`;
-}
-
-function coverArt(project, index) {
-  const category = esc(project.category || 'personal');
-  const initial = (project.title || '?').trim().charAt(0).toUpperCase();
-  return `<span class="work-cover-art work-cover-art--${category}" aria-hidden="true">
-    <span class="work-cover-no">${ROMAN[index] || String(index + 1)}</span>
-    <span class="work-cover-initial">${esc(initial)}</span>
-    <span class="work-cover-label">${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}</span>
-  </span>`;
-}
-
-function coverImage(project, index, alt = '') {
-  const src = safeHref(project.cover);
-  if (!src) return coverArt(project, index);
-  return `<img src="${esc(src)}" alt="${esc(project.coverAlt || alt)}" loading="lazy" decoding="async" />`;
-}
-
 /* ---------- build ---------- */
-
-function plate(item, index, label) {
-  const el = document.createElement('li');
-  el.className = 'plate';
-  el.style.transitionDelay = `${(index % 3) * 0.1}s`;
-  const link = safeHref(item.link);
-  el.innerHTML = `
-    <span class="plate-no">${esc(item.kicker || label)}</span>
-    <div>
-      ${
-        item.title
-          ? `<h3 class="plate-title">${
-              link
-                ? `<a class="plate-link" href="${esc(link)}"${externalAttrs(link)}>${esc(item.title)}<span class="plate-link-arrow" aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
-                : esc(item.title)
-            }</h3>`
-          : ''
-      }
-      <div class="plate-text">${paragraphs(item.text)}</div>
-      ${
-        item.tags && item.tags.length
-          ? `<div class="plate-tags">${item.tags.map((tag) => `<span>${esc(tag)}</span>`).join('')}</div>`
-          : ''
-      }
-    </div>
-  `;
-  return el;
-}
-
-function fillList(id, items, labeler) {
-  const el = $(id);
-  items.forEach((item, i) => el.appendChild(plate(item, i, labeler(i, item))));
-}
-
-function fillSocials(id) {
-  const el = $(id);
-  SOCIALS.forEach((social) => {
-    const a = document.createElement('a');
-    a.href = social.href;
-    a.setAttribute('aria-label', social.label);
-    if (social.href.startsWith('http')) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-    }
-    a.innerHTML = ICONS[social.icon];
-    el.appendChild(a);
-  });
-}
-
-function featuredCard(project) {
-  const index = PROJECTS.indexOf(project);
-  const link = safeHref(project.link);
-  const repo = safeHref(project.repo);
-  const systems = project.systems && project.systems.length ? `${project.systems.length} systems` : '';
-  const meta = [project.role, systems].filter(Boolean).join(' · ');
-
-  return `
-    <article class="work-card reveal">
-      <button class="work-cover" type="button" data-open-project="${esc(project.slug)}" aria-label="Read the ${esc(project.title)} case study">
-        ${coverImage(project, index)}
-        <span class="work-cover-hint">Read case study <span aria-hidden="true">→</span></span>
-      </button>
-      <div class="work-card-body">
-        <p class="work-card-meta">
-          <span>${esc(CATEGORY_LABELS[project.category] || project.category || 'Project')}</span>
-          <span class="meta-sep" aria-hidden="true">·</span>
-          ${statusMarkup(project.status)}
-        </p>
-        <h3 class="work-card-title">
-          <button type="button" data-open-project="${esc(project.slug)}">${esc(project.title)}</button>
-        </h3>
-        <p class="work-card-hook">${esc(project.hook)}</p>
-        ${meta ? `<p class="work-card-role">${esc(meta)}</p>` : ''}
-        ${chips(project.stack)}
-        <div class="work-card-links">
-          <button type="button" data-open-project="${esc(project.slug)}">Case study <span aria-hidden="true">→</span></button>
-          ${
-            link
-              ? `<a href="${esc(link)}"${externalAttrs(link)}>Live <span aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
-              : ''
-          }
-          ${
-            repo
-              ? `<a href="${esc(repo)}"${externalAttrs(repo)}>Code <span aria-hidden="true">↗</span><span class="sr-only"> (opens in new tab)</span></a>`
-              : ''
-          }
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-function indexRow(project) {
-  const index = PROJECTS.indexOf(project);
-  const tags = (project.stack || []).slice(0, 3).join(' · ');
-  return `
-    <li class="work-row reveal" data-category="${esc(project.category)}" data-featured="${String(Boolean(project.featured))}">
-      <button class="work-row-main" type="button" data-open-project="${esc(project.slug)}">
-        <span class="work-row-no">${String(index + 1).padStart(2, '0')}</span>
-        <span class="work-row-title">${esc(project.title)}</span>
-        <span class="work-row-hook">${esc(project.hook)}</span>
-        <span class="work-row-tags">${esc(tags)}</span>
-        <span class="work-row-arrow" aria-hidden="true">→</span>
-      </button>
-    </li>
-  `;
-}
 
 function setWorkView(filter) {
   const isAll = filter === 'all';
@@ -237,14 +74,11 @@ function setWorkView(filter) {
 }
 
 function renderWork() {
-  $('work-featured').innerHTML = FEATURED.map(featuredCard).join('');
-  $('work-index').innerHTML = PROJECTS.map(indexRow).join('');
+  $('work-featured').innerHTML = FEATURED.map((project) => featuredCard(project, PROJECTS.indexOf(project))).join('');
+  $('work-index').innerHTML = PROJECTS.map((project, index) => indexRow(project, index)).join('');
 
   const filters = $('work-filters');
-  filters.innerHTML = CATEGORIES.map(
-    (category, index) =>
-      `<button class="filter" type="button" data-filter="${esc(category.id)}" aria-pressed="${index === 0}">${esc(category.label)}</button>`
-  ).join('');
+  filters.innerHTML = workFiltersMarkup();
 
   filters.addEventListener('click', (event) => {
     const button = event.target.closest('[data-filter]');
@@ -259,44 +93,11 @@ function renderWork() {
 }
 
 function renderSkills() {
-  $('skills-grid').innerHTML = SKILLS.map((group, groupIndex) => {
-    const items = (group.items || [])
-      .map((item) => {
-        const href = safeHref(item.href);
-        const proof = esc(item.proof);
-        const content = `<span class="skill-name">${esc(item.name)}</span><span class="skill-proof">${proof}</span>`;
-        const row = href
-          ? `<a class="skill-link" href="${esc(href)}"${externalAttrs(href)}${
-              href.startsWith('#project/') ? ' aria-haspopup="dialog"' : ''
-            }>${content}${/^https?:/.test(href) ? '<span class="sr-only"> (opens in new tab)</span>' : ''}</a>`
-          : `<div class="skill-link">${content}</div>`;
-
-        return `<li class="skill-item">${row}</li>`;
-      })
-      .join('');
-
-    return `<section class="skill-group reveal" aria-labelledby="skill-group-${groupIndex}">
-      <h3 id="skill-group-${groupIndex}" class="skill-group-title">${esc(group.group)}</h3>
-      ${group.note ? `<p class="skill-group-note">${esc(group.note)}</p>` : ''}
-      <ul class="skill-list">${items}</ul>
-    </section>`;
-  }).join('');
+  $('skills-grid').innerHTML = skillsMarkup(SKILLS);
 }
 
 function renderTimeline() {
-  $('timeline').innerHTML = EXPERIENCE.map(
-    (item) => `<li class="timeline-item reveal">
-      <div class="timeline-meta">
-        ${item.period ? `<span class="timeline-period">${esc(item.period)}</span>` : ''}
-        ${item.kind ? `<span class="timeline-kind timeline-kind--${esc(item.kind)}">${esc(item.kind)}</span>` : ''}
-      </div>
-      <div class="timeline-body">
-        <h4 class="timeline-role">${esc(item.role)}</h4>
-        <p class="timeline-org">${esc(item.org)}</p>
-        ${item.detail ? `<p class="timeline-detail">${esc(item.detail)}</p>` : ''}
-      </div>
-    </li>`
-  ).join('');
+  $('timeline').innerHTML = timelineMarkup(EXPERIENCE);
 }
 
 /* ---------- drawer ---------- */
@@ -331,6 +132,7 @@ function drawerMarkup(project) {
   const caseStudy = project.caseStudy || {};
   const systems = project.systems || [];
   const gallery = (project.gallery || []).map((src) => safeHref(src)).filter(Boolean);
+  const galleryAlt = project.galleryAlt || [];
   const meta = [
     ['Role', project.role],
     ['Period', project.period],
@@ -382,7 +184,7 @@ function drawerMarkup(project) {
         ? `<section class="drawer-section"><h3>More views</h3><div class="drawer-gallery">${gallery
             .map(
               (src, index) =>
-                `<img src="${esc(src)}" alt="${esc(project.title)} — view ${index + 1}" loading="lazy" decoding="async" />`
+                `<img src="${esc(src)}" alt="${esc(galleryAlt[index] || `${project.title} — view ${index + 1}`)}" loading="lazy" decoding="async" />`
             )
             .join('')}</div></section>`
         : ''
@@ -535,8 +337,7 @@ function initDrawer() {
 /* ---------- nav ---------- */
 
 function buildNav() {
-  const nav = $('site-nav');
-  nav.innerHTML = NAV.map((item) => `<a class="nav-link" href="#${item.id}">${esc(item.label)}</a>`).join('');
+  $('site-nav').innerHTML = navMarkup();
 }
 
 function initNav() {
@@ -665,13 +466,12 @@ function renderAbout() {
   const leadEl = $('about-lead');
 
   if (lead) {
-    leadEl.innerHTML = `<span class="about-lead-label">${esc(lead.kicker || 'Who I am')}</span>
-      <div class="about-lead-text">${paragraphs(lead.text)}</div>`;
+    leadEl.innerHTML = aboutLeadMarkup(lead);
   } else {
     leadEl.hidden = true;
   }
 
-  fillList('about-list', rest, (i) => `Plate ${ROMAN[i]}`);
+  $('about-list').innerHTML = aboutListMarkup(rest);
 }
 
 /* ---------- hero ---------- */
@@ -767,47 +567,6 @@ function initBackToTop() {
   });
 }
 
-async function copyText(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  const area = document.createElement('textarea');
-  area.value = text;
-  area.setAttribute('readonly', '');
-  area.style.position = 'fixed';
-  area.style.opacity = '0';
-  document.body.appendChild(area);
-  area.select();
-  document.execCommand('copy');
-  area.remove();
-}
-
-function initCopyMail() {
-  const button = $('copy-mail');
-  if (!button) return;
-  let timer = 0;
-
-  button.addEventListener('click', async () => {
-    try {
-      await copyText(CONTACT_MAIL);
-      window.clearTimeout(timer);
-      button.textContent = 'Copied';
-      button.classList.add('is-copied');
-      timer = window.setTimeout(() => {
-        button.textContent = 'Copy';
-        button.classList.remove('is-copied');
-      }, 1800);
-    } catch {
-      button.textContent = 'Copy failed';
-      window.setTimeout(() => {
-        button.textContent = 'Copy';
-      }, 1800);
-    }
-  });
-}
-
 function initNoWebglDismiss() {
   $('no-webgl-dismiss')?.addEventListener('click', () => {
     $('no-webgl-note').hidden = true;
@@ -822,9 +581,9 @@ export function initUI() {
   renderSkills();
   renderAbout();
   renderTimeline();
-  fillList('quotes-list', QUOTES, (_i, item) => item.source);
-  fillSocials('socials');
-  fillSocials('socials-end');
+  $('quotes-list').innerHTML = notesMarkup(QUOTES);
+  $('socials').innerHTML = socialsMarkup();
+  $('socials-end').innerHTML = socialsMarkup();
   $('contact-mail').href = `mailto:${CONTACT_MAIL}`;
   $('contact-mail').textContent = CONTACT_MAIL;
 
@@ -835,7 +594,6 @@ export function initUI() {
   initDrawer();
   initBackToTop();
   initHero();
-  initCopyMail();
   initNoWebglDismiss();
   observeReveals();
 }

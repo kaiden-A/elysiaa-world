@@ -3,8 +3,8 @@
   "slug": "elysiaa",
   "category": "personal",
   "kind": "project",
-  "hook": "This site: a hand-built WebGL world with custom shaders, a day/night cycle and a wanderer.",
-  "text": "This world. Built for no one but curiosity — a place to test what shaders, pixels and a stubborn idea can become.",
+  "hook": "This site: a hand-built WebGL world named for the hope of a better one.",
+  "text": "This world. Built for no one but curiosity — a place to test what shaders, pixels and a stubborn idea can become. Elysiaa is the name I gave it: an abstract concept, and a hope for a better world.",
   "role": "Designer & developer",
   "period": "",
   "status": "live",
@@ -37,5 +37,5 @@
     "glsl",
     "personal"
   ],
-  "order": 9
+  "order": 11
 }

@@ -1824,7 +1824,9 @@ a.skill-link:focus-visible .skill-proof {
 
 .about-lead-label {
   display: block;
+  margin: 0;
   font-family: var(--sans);
+  font-weight: 400;
   font-size: 0.6rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -2012,16 +2014,6 @@ a.skill-link:focus-visible .skill-proof {
   text-wrap: balance;
 }
 
-.contact-note {
-  margin-top: 1.6em;
-  font-family: var(--body);
-  font-style: italic;
-  font-size: clamp(0.98rem, 1.5vw, 1.15rem);
-  line-height: 1.7;
-  color: rgba(242, 232, 213, 0.7);
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.9);
-}
-
 .contact-email-row {
   margin-top: 1.5em;
   display: flex;
@@ -2046,28 +2038,6 @@ a.skill-link:focus-visible .skill-proof {
 
 .contact-mail:hover {
   color: #fff3da;
-  border-color: var(--sun);
-}
-
-.copy-mail {
-  min-height: 44px;
-  padding: 0.55em 1em;
-  border: 1px solid rgba(242, 232, 213, 0.3);
-  background: rgba(8, 12, 16, 0.4);
-  font-family: var(--sans);
-  font-size: 0.56rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(242, 232, 213, 0.8);
-  cursor: pointer;
-  transition: color 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s var(--ease);
-}
-
-.copy-mail:hover,
-.copy-mail:focus-visible,
-.copy-mail.is-copied {
-  color: var(--abyss);
-  background: var(--sun);
   border-color: var(--sun);
 }
 
@@ -2677,7 +2647,6 @@ body[data-phase='night'] .no-webgl {
   .skill-link,
   .skill-name,
   .skill-proof,
-  .copy-mail,
   .drawer-back,
   .drawer-next,
   .drawer-next span:last-child,
@@ -3017,10 +2986,6 @@ body[data-phase='night'] .no-webgl {
 
   .contact-line {
     margin-top: 1.5em;
-  }
-
-  .contact-note {
-    margin-top: 1.1em;
   }
 
   .contact-email-row {

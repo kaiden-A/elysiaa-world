@@ -14,6 +14,26 @@
       "href": "#project/elysiaa"
     },
     {
+      "name": "Python / FastAPI",
+      "proof": "Secria · Neoma",
+      "href": "#project/secria"
+    },
+    {
+      "name": "Postgres",
+      "proof": "Secria · Neoma",
+      "href": "#project/secria"
+    },
+    {
+      "name": "Cloud Run",
+      "proof": "Secria · Neoma",
+      "href": "#project/secria"
+    },
+    {
+      "name": "CLI design",
+      "proof": "Secria",
+      "href": "#project/secria"
+    },
+    {
       "name": "Git & GitHub",
       "proof": "github.com/kaiden-A",
       "href": "https://github.com/kaiden-A"

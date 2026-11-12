@@ -14,6 +14,16 @@
       "href": "#project/ktag"
     },
     {
+      "name": "Secrets & access control",
+      "proof": "Secria",
+      "href": "#project/secria"
+    },
+    {
+      "name": "Search & knowledge systems",
+      "proof": "Atlas Sky",
+      "href": "#project/atlas-sky"
+    },
+    {
       "name": "API integration",
       "proof": "Neoma · Calendar",
       "href": "#project/neoma"

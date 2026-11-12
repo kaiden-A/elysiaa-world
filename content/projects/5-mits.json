@@ -8,7 +8,7 @@
   "role": "Volunteer systems developer",
   "period": "",
   "status": "in-progress",
-  "featured": true,
+  "featured": false,
   "stack": [
     "Systems design",
     "Digital transformation"
@@ -34,5 +34,5 @@
     "school systems",
     "ecosystem"
   ],
-  "order": 3
+  "order": 5
 }

@@ -1,0 +1,26 @@
+# Elysiaa
+
+> Elysiaa is the personal world and portfolio of Amirul Ikhwan (Kaiden-A), a Computer Science (AI) student and full-stack developer at International Islamic University Malaysia. Elysiaa is an abstract concept representing the hope of a better world.
+
+## Identity
+
+- Amirul Ikhwan is the full name.
+- Kaiden-A is the online and programmer handle.
+- Elysiaa is the name of the world and concept he builds under. It is not a separate person or a company.
+
+## Selected projects
+
+- [Atlas Sky](https://atlas.elysiaa.com/) - A star-map vault of the patterns, projects and playbooks behind his systems, generated from a plain-Markdown vault.
+- [Secria](https://secria.elysiaa.com/) - A self-hosted secrets manager with envelope encryption, project-scoped access, audited reveals and a CLI-native workflow.
+- [Elpis AI](https://elpis-dev.elysiaa.com/) - A fully agentic personal AI built on MCP tool calling.
+- [KTAG Student Systems](https://ktag.upm.edu.my/) - Management and booking systems for Kolej Tan Sri Aishah Ghani, UPM.
+
+## Main pages
+
+- [Portfolio and case studies](https://www.elysiaa.com/) - Work, skills, background and contact.
+
+## Contact
+
+- Email: contacts@elysiaa.com
+- GitHub: https://github.com/kaiden-A
+- LinkedIn: https://www.linkedin.com/in/amirul-ikhwan-041772390

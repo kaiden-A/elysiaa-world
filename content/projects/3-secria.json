@@ -1,0 +1,49 @@
+{
+  "title": "Secria",
+  "slug": "secria",
+  "category": "personal",
+  "kind": "project",
+  "hook": "A self-hosted secrets manager with envelope encryption and a CLI-native workflow.",
+  "text": "Secria keeps application secrets out of .env files and chat messages. Values are envelope-encrypted, scoped to a project and environment, and revealed only through an audited path — from the web app or the CLI.",
+  "role": "Solo developer",
+  "period": "2026",
+  "status": "live",
+  "featured": true,
+  "stack": [
+    "FastAPI",
+    "Next.js",
+    "Postgres",
+    "AES-256-GCM",
+    "CLI"
+  ],
+  "highlights": [
+    "Envelope encryption: a master key wraps per-project keys, which encrypt each secret version.",
+    "Project- and environment-scoped access, with audited reveals that never log values.",
+    "A CLI workflow - run, diff, push, pull - injects secrets in memory.",
+    "Self-hosted on Cloud Run, with the client on Vercel and keys kept outside both."
+  ],
+  "systems": [],
+  "cover": "/media/projects/secria/cover.jpg",
+  "coverAlt": "Secria's landing page: a pale lock plate between two lime waveforms on a deep teal background.",
+  "gallery": [
+    "/media/projects/secria/security.jpg"
+  ],
+  "galleryAlt": [
+    "Secria's security section showing the master-key, project-key and secret-value chain beside a ciphertext sample."
+  ],
+  "caseStudy": {
+    "problem": "Secrets end up in .env files, screenshots and chat threads. I wanted a small, self-hosted vault that a solo developer could actually run, with a clear key hierarchy and an audit trail that records actions rather than values.",
+    "approach": "I built Secria around envelope encryption: one master key, a per-project data key, and AES-256-GCM for every secret version. The web app never decrypts; access is scoped by workspace, project and environment, and every reveal or download is logged. A Python CLI handles push, pull, diff and run with secrets injected in memory.",
+    "outcome": "Secria runs as a self-hosted service with a public landing page and CLI docs. It is already used to sync deployment secrets for some of my Cloud Run projects.",
+    "learned": "Security is mostly about refusing convenience. The interface is small because every extra place plaintext can appear is another place it can leak."
+  },
+  "link": "https://secria.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "security",
+    "secrets",
+    "self-hosted",
+    "cli"
+  ],
+  "order": 3
+}

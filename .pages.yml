@@ -161,6 +161,11 @@ content:
         label: Gallery
         type: image
         list: true
+      - name: galleryAlt
+        label: Gallery alt text
+        type: string
+        list: true
+        description: One description per gallery image, in the same order.
       - name: caseStudy
         label: Case study
         type: object

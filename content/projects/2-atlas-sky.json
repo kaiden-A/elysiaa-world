@@ -1,0 +1,48 @@
+{
+  "title": "Atlas Sky",
+  "slug": "atlas-sky",
+  "category": "personal",
+  "kind": "project",
+  "hook": "A star-map vault of the patterns, projects and playbooks behind my systems.",
+  "text": "Atlas Sky is my personal pattern vault, drawn as a star map. Every entry is a reusable piece of engineering — an auth model, a deploy shape, a folder structure — linked to the projects where it has actually been verified.",
+  "role": "Designer & developer",
+  "period": "2026",
+  "status": "live",
+  "featured": true,
+  "stack": [
+    "Vite",
+    "JavaScript",
+    "Canvas",
+    "Markdown"
+  ],
+  "highlights": [
+    "39 entries, from patterns and blueprints to playbooks and prompts, connected by 153 relationships.",
+    "A navigable star map with search, catalog and type/status filters instead of a flat index.",
+    "Generated from a plain-Markdown vault, so every entry stays portable.",
+    "Each pattern records the real projects where it has been verified."
+  ],
+  "systems": [],
+  "cover": "/media/projects/atlas/cover.jpg",
+  "coverAlt": "Atlas Sky's star map: labelled points of light connected by fine lines against a dark violet sky.",
+  "gallery": [
+    "/media/projects/atlas/logbook.jpg"
+  ],
+  "galleryAlt": [
+    "An Atlas Sky entry open beside the star map, showing the auth and session model with its invariants."
+  ],
+  "caseStudy": {
+    "problem": "The patterns behind my projects were scattered across repositories, notes and memory. I wanted one place to see what I had already solved, and where each solution had been proven.",
+    "approach": "I turned the vault into a generated dataset and drew it as a star map: patterns become anchor stars, implementations orbit them, and edges show which ideas belong together. Search, filters and a logbook make the map readable rather than decorative.",
+    "outcome": "Atlas now holds 39 entries and 153 links across my projects. Starting a new app means searching the map first instead of improvising the same decisions again.",
+    "learned": "A knowledge base only earns its keep when retrieval is faster than rebuilding. The visual layer matters because it makes the connections legible at a glance."
+  },
+  "link": "https://atlas.elysiaa.com",
+  "repo": "",
+  "tags": [
+    "knowledge system",
+    "star map",
+    "pattern vault",
+    "personal"
+  ],
+  "order": 2
+}
